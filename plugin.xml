@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="com.3screens.cordova.plugin.brotherPrinter"
+        version="0.0.2">
+
+    <name>BrotherPrinter</name>
+
+    <description>Cordova hooks for Brother Print SDK</description>
+    <repo>https://github.com/gordol/cordova-brother-label-printer.git</repo>
+    <keywords>brother, sdk, print</keywords>
+    <license></license>
+
+    <author>Thomas Gordon Lowrey IV</author>
+
+    <engines>
+        <engine name="cordova" version=">=3.0.0" />
+    </engines>
+
+    <!-- interface -->
+    <js-module src="www/printer.js" name="BrotherPrinter">
+        <clobbers target="plugin.brotherPrinter" />
+        <clobbers target="cordova.plugins.brotherPrinter" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="BrotherPrinter">
+                <param name="android-package" value="com.3screens.cordova.plugin.brotherPrinter.BrotherPrinter"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/BrotherPrinter.java" target-dir="src/com/3screens/cordova/plugin/brotherPrinter" />
+        <source-file src="src/android/libs/BrotherPrintLibrary.jar" target-dir="libs" />
+        <source-file src="src/android/libs/MobilePrintLib.jar" target-dir="libs" />
+        <source-file src="src/android/libs/armeabi" target-dir="libs" />
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+            <uses-feature android:name="android.hardware.camera" android:required="true" />
+            <uses-feature android:name="android.hardware.camera.autofocus" android:required="true" />
+        </config-file>
+    </platform>
+</plugin>
