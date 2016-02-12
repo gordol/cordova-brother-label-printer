@@ -1,4 +1,4 @@
-package com.3screens.cordova.plugin.brotherPrinter;
+package com.threescreens.cordova.plugin.brotherPrinter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
