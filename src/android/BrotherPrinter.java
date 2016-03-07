@@ -75,63 +75,69 @@ public class BrotherPrinter extends CordovaPlugin {
 
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
+                try{
 
-                searched = true;
+                    searched = true;
 
-                NetPrinter[] netPrinters = enumerateNetPrinters();
-                int netPrinterCount = netPrinters.length;
+                    NetPrinter[] netPrinters = enumerateNetPrinters();
+                    int netPrinterCount = netPrinters.length;
 
-                ArrayList<Map> netPrintersList = null;
-                if(netPrintersList != null) netPrintersList.clear();
-                netPrintersList = new ArrayList<Map>();
+                    ArrayList<Map> netPrintersList = null;
+                    if(netPrintersList != null) netPrintersList.clear();
+                    netPrintersList = new ArrayList<Map>();
 
-                if (netPrinterCount > 0) {
-                    found = true;
-                    Log.d(TAG, "---- network printers found! ----");
+                    if (netPrinterCount > 0) {
+                        found = true;
+                        Log.d(TAG, "---- network printers found! ----");
 
-                    for (int i = 0; i < netPrinterCount; i++) {
-                        Map<String, String> netPrinter = new HashMap<String, String>();
+                        for (int i = 0; i < netPrinterCount; i++) {
+                            Map<String, String> netPrinter = new HashMap<String, String>();
 
-                        ipAddress = netPrinters[i].ipAddress;
-                        macAddress = netPrinters[i].macAddress;
+                            ipAddress = netPrinters[i].ipAddress;
+                            macAddress = netPrinters[i].macAddress;
 
-                        netPrinter.put("ipAddress", netPrinters[i].ipAddress);
-                        netPrinter.put("macAddress", netPrinters[i].macAddress);
-                        netPrinter.put("serNo", netPrinters[i].serNo);
-                        netPrinter.put("nodeName", netPrinters[i].nodeName);
+                            netPrinter.put("ipAddress", netPrinters[i].ipAddress);
+                            netPrinter.put("macAddress", netPrinters[i].macAddress);
+                            netPrinter.put("serNo", netPrinters[i].serNo);
+                            netPrinter.put("nodeName", netPrinters[i].nodeName);
 
-                        netPrintersList.add(netPrinter);
+                            netPrintersList.add(netPrinter);
 
-                        Log.d(TAG, 
-                                    " idx:    " + Integer.toString(i)
-                                + "\n model:  " + netPrinters[i].modelName
-                                + "\n ip:     " + netPrinters[i].ipAddress
-                                + "\n mac:    " + netPrinters[i].macAddress
-                                + "\n serial: " + netPrinters[i].serNo
-                                + "\n name:   " + netPrinters[i].nodeName
-                             );
+                            Log.d(TAG, 
+                                        " idx:    " + Integer.toString(i)
+                                    + "\n model:  " + netPrinters[i].modelName
+                                    + "\n ip:     " + netPrinters[i].ipAddress
+                                    + "\n mac:    " + netPrinters[i].macAddress
+                                    + "\n serial: " + netPrinters[i].serNo
+                                    + "\n name:   " + netPrinters[i].nodeName
+                                 );
+                        }
+
+                        Log.d(TAG, "---- /network printers found! ----");
+
+                    }else if (netPrinterCount == 0 ) { 
+                        found = false;
+                        Log.d(TAG, "!!!! No network printers found !!!!");
                     }
 
-                    Log.d(TAG, "---- /network printers found! ----");
+                    JSONArray args = new JSONArray();
+                    PluginResult result;
 
-                }else if (netPrinterCount == 0 ) { 
-                    found = false;
-                    Log.d(TAG, "!!!! No network printers found !!!!");
+                    Boolean available = netPrinterCount > 0;
+
+                    args.put(available);
+                    args.put(netPrintersList);
+
+                    result = new PluginResult(PluginResult.Status.OK, args);
+
+                    callbackctx.sendPluginResult(result);
+
+                }catch(Exception e){    
+                    e.printStackTrace();
                 }
 
-                JSONArray args = new JSONArray();
-                PluginResult result;
-
-                Boolean available = netPrinterCount > 0;
-
-                args.put(available);
-                args.put(netPrintersList);
-
-                result = new PluginResult(PluginResult.Status.OK, args);
-
-                callbackctx.sendPluginResult(result);
-
             }
+
         });
 
     }
@@ -162,7 +168,7 @@ public class BrotherPrinter extends CordovaPlugin {
             callbackctx.sendPluginResult(result);
         }
 
-        cordova.getActivity().runOnUiThread( new Runnable() {
+        cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try{
 
