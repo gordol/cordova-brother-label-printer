@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -15,6 +19,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -27,6 +35,10 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
+import android.app.PendingIntent;
+
 import com.brother.ptouch.sdk.LabelInfo;
 import com.brother.ptouch.sdk.NetPrinter;
 import com.brother.ptouch.sdk.Printer;
@@ -34,6 +46,9 @@ import com.brother.ptouch.sdk.PrinterInfo;
 import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
+
+    Activity activity = this.cordova.getActivity(); 
+    Context context = activity.getApplicationContext(); 
 
     String modelName = "QL-720NW";
     private NetPrinter[] netPrinters;
@@ -58,6 +73,11 @@ public class BrotherPrinter extends CordovaPlugin {
 
         if ("printViaSDK".equals(action)) {
             printViaSDK(args, callbackContext);
+            return true;
+        }
+
+        if ("sendUSBConfig".equals(action)) {
+            sendUSBConfig(args, callbackContext);
             return true;
         }
 
@@ -179,9 +199,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     myPrinterInfo.printerModel  = PrinterInfo.Model.QL_720NW;
                     myPrinterInfo.port          = PrinterInfo.Port.NET;
-                    //myPrinterInfo.printMode     = PrinterInfo.PrintMode.FIT_TO_PAGE;
                     myPrinterInfo.printMode     = PrinterInfo.PrintMode.ORIGINAL;
-                    //myPrinterInfo.orientation   = PrinterInfo.Orientation.LANDSCAPE;
                     myPrinterInfo.orientation   = PrinterInfo.Orientation.PORTRAIT;
                     myPrinterInfo.paperSize     = PrinterInfo.PaperSize.CUSTOM;
                     myPrinterInfo.ipAddress     = ipAddress;
@@ -222,4 +240,97 @@ public class BrotherPrinter extends CordovaPlugin {
             }
         });
     }
+
+
+    private void sendUSBConfig(final JSONArray args, final CallbackContext callbackctx){
+
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+
+                Printer myPrinter = new Printer();
+
+                UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+                UsbDevice usbDevice = myPrinter.getUsbDevice(usbManager);
+                if (usbDevice == null) {
+                    Log.d(TAG, "USB device not found");
+                    return;
+                }
+
+                final String ACTION_USB_PERMISSION = "com.threescreens.cordova.plugin.brotherPrinter.USB_PERMISSION";
+
+                PendingIntent permissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                usbManager.requestPermission(usbDevice, permissionIntent);
+
+                final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String action = intent.getAction();
+                        if (ACTION_USB_PERMISSION.equals(action)) {
+                            synchronized (this) {
+                                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false))
+                                    Log.d(TAG, "USB permission granted");
+                                else
+                                    Log.d(TAG, "USB permission rejected");
+                            }
+                        }
+                    }
+                };
+
+                context.registerReceiver(mUsbReceiver, new IntentFilter(ACTION_USB_PERMISSION));
+
+                while (true) {
+                    if (!usbManager.hasPermission(usbDevice)) {
+                        usbManager.requestPermission(usbDevice, permissionIntent);
+                    } else {
+                        break; 
+                    }
+
+                    try { 
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) { 
+                        e.printStackTrace();
+                    }
+                }
+
+                PrinterInfo myPrinterInfo = new PrinterInfo();
+
+                myPrinterInfo = myPrinter.getPrinterInfo();
+
+                myPrinterInfo.printerModel  = PrinterInfo.Model.QL_720NW;
+                myPrinterInfo.port          = PrinterInfo.Port.USB;
+
+                myPrinter.setPrinterInfo(myPrinterInfo);
+
+                File outputDir = context.getCacheDir();
+                File outputFile;
+
+                try {
+                    outputFile = File.createTempFile("configure", "prn", outputDir);
+                    String prnPath = outputFile.toString();
+
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(prnPath, Context.MODE_PRIVATE));
+                    outputStreamWriter.write(args.optString(0, null));
+                    outputStreamWriter.close();
+
+                    PrinterStatus status = myPrinter.printFile(prnPath);
+
+                    outputFile.delete();
+
+                    String status_code = ""+status.errorCode;
+
+                    Log.d(TAG, "PrinterStatus: "+status_code);
+
+                    PluginResult result;
+                    result = new PluginResult(PluginResult.Status.OK, status_code);
+                    callbackctx.sendPluginResult(result);
+
+                } catch (IOException e) {
+                    Log.d(TAG, "Temp file action failed: " + e.toString());
+                } 
+
+
+            }
+        });
+    }
+
 }

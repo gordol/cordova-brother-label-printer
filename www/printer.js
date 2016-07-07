@@ -13,8 +13,13 @@ BrotherPrinter.prototype = {
             return
         }
         cordova.exec(callback, function(err){console.log('error: '+err)}, 'BrotherPrinter', 'printViaSDK', [data])
-
-
+    },
+    sendUSBConfig: function (data, callback) {
+        if (!data || !data.length) {
+            console.log('No data passed in. Expects print payload string.')
+            return
+        }
+        cordova.exec(callback, function(err){console.log('error: '+err)}, 'BrotherPrinter', 'sendUSBConfig', [data])
     }
 }
 var plugin = new BrotherPrinter()
