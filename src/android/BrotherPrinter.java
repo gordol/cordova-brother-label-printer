@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -46,9 +46,6 @@ import com.brother.ptouch.sdk.PrinterInfo;
 import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
-
-    Activity activity = this.cordova.getActivity(); 
-    Context context = activity.getApplicationContext(); 
 
     String modelName = "QL-720NW";
     private NetPrinter[] netPrinters;
@@ -249,6 +246,8 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 Printer myPrinter = new Printer();
 
+                Context context = cordova.getActivity().getApplicationContext();
+
                 UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
                 UsbDevice usbDevice = myPrinter.getUsbDevice(usbManager);
                 if (usbDevice == null) {
@@ -298,22 +297,31 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 myPrinterInfo.printerModel  = PrinterInfo.Model.QL_720NW;
                 myPrinterInfo.port          = PrinterInfo.Port.USB;
+                myPrinterInfo.paperSize     = PrinterInfo.PaperSize.CUSTOM;
 
                 myPrinter.setPrinterInfo(myPrinterInfo);
 
-                File outputDir = context.getCacheDir();
-                File outputFile;
+                LabelInfo myLabelInfo = new LabelInfo();
+
+                myLabelInfo.labelNameIndex  = myPrinter.checkLabelInPrinter();
+                myLabelInfo.isAutoCut       = true;
+                myLabelInfo.isEndCut        = true;
+                myLabelInfo.isHalfCut       = false;
+                myLabelInfo.isSpecialTape   = false;
+
+                //label info must be set after setPrinterInfo, it's not in the docs
+                myPrinter.setLabelInfo(myLabelInfo);
+
 
                 try {
-                    outputFile = File.createTempFile("configure", "prn", outputDir);
-                    String prnPath = outputFile.toString();
+                    File outputDir = context.getCacheDir();
+                    File outputFile = new File(outputDir.getPath() + "configure.prn");
 
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(prnPath, Context.MODE_PRIVATE));
-                    outputStreamWriter.write(args.optString(0, null));
-                    outputStreamWriter.close();
+                    FileWriter writer = new FileWriter(outputFile);
+                    writer.write(args.optString(0, null));
+                    writer.close();
 
-                    PrinterStatus status = myPrinter.printFile(prnPath);
-
+                    PrinterStatus status = myPrinter.printFile(outputFile.toString());
                     outputFile.delete();
 
                     String status_code = ""+status.errorCode;
@@ -327,7 +335,6 @@ public class BrotherPrinter extends CordovaPlugin {
                 } catch (IOException e) {
                     Log.d(TAG, "Temp file action failed: " + e.toString());
                 } 
-
 
             }
         });
