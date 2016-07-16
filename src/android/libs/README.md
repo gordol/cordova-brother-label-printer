@@ -1,5 +1,5 @@
 # End-User License Agreement for Brother Software
-
+```
 This Software License Agreement ("Agreement") is a legal agreement between Brother Industries, Ltd., 15-1 Naeshiro-cho, Mizuho-ku, Nagoya 467-8561 Japan ("Brother") and any natural person or legal entity ("User") who are desiring to use the Software (defined below), to provide terms and conditions for license grant by Brother to User with respect to certain software development tools ("Software") for Brother mobile printer products "MPrint" series and/or "PocketJet" series ("MPrinters"). The Software includes whole or any part of computer software, components thereof, media therefor, printed material related thereto (including manuals and other documents), sample program and electronic and on-line documents. Certain portion of the Software may be subject to amendment and/or supplement of this Agreement. User's install, reproduction or use of the Software shall be deemed as User's agreement to be legally bound by the terms of this Agreement. If User does not agree to the terms of this Agreement, User does not have a license for the Software and User may not use the SOFTWARE.
 1. Ownership
 
@@ -60,3 +60,4 @@ b. User shall indemnify and hold Brother harmless from any and all claims, suits
 13. Governing Law
 
 This Agreement is governed by the laws of Japan, and the district court of Nagoya, Japan shall have exclusive jurisdiction with respect to this Agreement.
+```
