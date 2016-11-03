@@ -6,6 +6,19 @@ More info can be found here, including a list of compatible printers: http://www
 
 Already bundled is the following version: v3.0.4 (5/18/2016) which is in the `src/android/libs` dir. By downloading this you agree to the Brother SDK License terms which are included in the README under the libs dir.
 
+## Help and Support
+
+Please do not email me for support or help with this plugin, use the issue tracker link above, so everyone will benefit from community questions and involvement, and I don't have to answer the same questions over and over for many individuals.
+
+This is a Cordova plugin, firstly. You should be familiar with the Cordova plugin system before you try to use this plugin. Fortunately, it's pretty straight forward and easy to understand.
+
+You can [read more about Android plugin development for Cordova here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/plugin.html).  Knowledge of all of these internals is not necessary, but it doesn't hurt to be familiar either. 
+
+Read here to [learn how to use Cordova Plugins](https://cordova.apache.org/docs/en/latest/guide/cli/index.html#add-plugins).
+
+If you still have questions, please use the [issue tracker](https://github.com/3screens/cordova-brother-label-printer/issues). Please look at existing issues, and if your question is not answered yet, feel free to open a new issue and I'm happy to assist.
+
+
 ## Target mobile printers:
 ```
 PocketJet PJ-722, PJ-723, PJ-762, PJ-763, PJ-763MFi, PJ-773
