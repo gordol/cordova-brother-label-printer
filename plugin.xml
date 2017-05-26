@@ -3,7 +3,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="com.threescreens.cordova.plugin.brotherPrinter"
-        version="0.0.2">
+        version="0.0.3">
 
     <name>BrotherPrinter</name>
 
@@ -37,15 +37,12 @@
         <source-file src="src/android/libs/armeabi" target-dir="libs" />
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.CAMERA" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
             <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
             <uses-permission android:name="android.permission.INTERNET"/>
             <uses-permission android:name="android.permission.USB" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-            <uses-feature android:name="android.hardware.camera" android:required="true" />
-            <uses-feature android:name="android.hardware.camera.autofocus" android:required="true" />
             <uses-feature android:name="android.hardware.usb" android:required="true" />
         </config-file>
     </platform>
