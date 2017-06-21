@@ -7,8 +7,8 @@ import java.util.Map;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -16,24 +16,15 @@ import org.apache.cordova.PluginResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Picture;
-import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -120,7 +111,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                             netPrintersList.add(netPrinter);
 
-                            Log.d(TAG, 
+                            Log.d(TAG,
                                         " idx:    " + Integer.toString(i)
                                     + "\n model:  " + netPrinters[i].modelName
                                     + "\n ip:     " + netPrinters[i].ipAddress
@@ -132,7 +123,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                         Log.d(TAG, "---- /network printers found! ----");
 
-                    }else if (netPrinterCount == 0 ) { 
+                    }else if (netPrinterCount == 0 ) {
                         found = false;
                         Log.d(TAG, "!!!! No network printers found !!!!");
                     }
@@ -149,7 +140,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     callbackctx.sendPluginResult(result);
 
-                }catch(Exception e){    
+                }catch(Exception e){
                     e.printStackTrace();
                 }
 
@@ -162,8 +153,10 @@ public class BrotherPrinter extends CordovaPlugin {
     public static Bitmap bmpFromBase64(String base64, final CallbackContext callbackctx){
         try{
             byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        }catch(Exception e){    
+            InputStream stream = new ByteArrayInputStream(bytes);
+
+            return BitmapFactory.decodeStream(stream);
+        }catch(Exception e){
             e.printStackTrace();
             return null;
         }
@@ -219,7 +212,7 @@ public class BrotherPrinter extends CordovaPlugin {
                     String paperWidth = ""+myPrinter.getLabelParam().paperWidth;
                     Log.d(TAG, "paperWidth = " + paperWidth);
                     Log.d(TAG, "labelWidth = " + labelWidth);
-                    
+
                     PrinterStatus status = myPrinter.printImage(bitmap);
 
                     //casting to string doesn't work, but this does... wtf Brother
@@ -231,7 +224,7 @@ public class BrotherPrinter extends CordovaPlugin {
                     result = new PluginResult(PluginResult.Status.OK, status_code);
                     callbackctx.sendPluginResult(result);
 
-                }catch(Exception e){    
+                }catch(Exception e){
                     e.printStackTrace();
                 }
             }
@@ -281,12 +274,12 @@ public class BrotherPrinter extends CordovaPlugin {
                     if (!usbManager.hasPermission(usbDevice)) {
                         usbManager.requestPermission(usbDevice, permissionIntent);
                     } else {
-                        break; 
+                        break;
                     }
 
-                    try { 
+                    try {
                         Thread.sleep(1000);
-                    } catch (InterruptedException e) { 
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
@@ -334,8 +327,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 } catch (IOException e) {
                     Log.d(TAG, "Temp file action failed: " + e.toString());
-                } 
-
+                }
             }
         });
     }

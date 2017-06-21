@@ -1,7 +1,7 @@
 {
 	"name": "cordova-brother-label-printer",
 	"version": "0.0.3",
-	"description": "An android only driver for printing to Brother Label printers",
+	"description": "Cordova hooks for Brother Print SDK",
 	"cordova": {
 		"id": "cordova-brother-label-printer",
 		"platforms": [
@@ -13,15 +13,14 @@
 		"url": "https://github.com/gordol/cordova-brother-label-printer"
 	},
 	"keywords": [
-		"printer",
-		"printing",
-		"label",
-		"brother"
+		"brother",
+		"sdk",
+		"print"
 	],
-	"engines": {
+	"engines": [{
 		"name": "cordova",
 		"version": ">=3.0.0"
-	},
+	}],
 	"author": "Thomas Gordon Lowrey IV",
 	"license": "MIT (https://github.com/gordol/cordova-brother-label-printer/blob/master/LICENSE)"
 }
