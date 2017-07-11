@@ -1,49 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-brother-label-printer"
-        version="0.0.3">
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		id="cordova-brother-label-printer"
+		version="0.0.4">
 
-    <name>BrotherPrinter</name>
+	<name>BrotherPrinter</name>
 
-    <description>Cordova hooks for Brother Print SDK</description>
-    <repo>https://github.com/gordol/cordova-brother-label-printer.git</repo>
-    <keywords>brother, sdk, print</keywords>
-    <license></license>
+	<description>Cordova hooks for Brother Print SDK</description>
+	<repo>https://github.com/gordol/cordova-brother-label-printer.git</repo>
+	<keywords>brother, sdk, print</keywords>
+	<license></license>
 
-    <author>Thomas Gordon Lowrey IV</author>
+	<author>Thomas Gordon Lowrey IV</author>
 
-    <engines>
-        <engine name="cordova" version=">=3.0.0" />
-    </engines>
+	<engines>
+		<engine name="cordova" version=">=3.0.0" />
+	</engines>
 
-    <!-- interface -->
-    <js-module src="www/printer.js" name="BrotherPrinter">
-        <clobbers target="plugin.brotherPrinter" />
-        <clobbers target="cordova.plugins.brotherPrinter" />
-    </js-module>
+	<!-- interface -->
+	<js-module src="www/printer.js" name="BrotherPrinter">
+		<clobbers target="plugin.brotherPrinter" />
+		<clobbers target="cordova.plugins.brotherPrinter" />
+	</js-module>
 
-    <!-- android -->
-    <platform name="android">
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="BrotherPrinter">
-                <param name="android-package" value="com.threescreens.cordova.plugin.brotherPrinter.BrotherPrinter"/>
-            </feature>
-        </config-file>
+	<!-- android -->
+	<platform name="android">
+		<config-file target="res/xml/config.xml" parent="/*">
+			<feature name="BrotherPrinter">
+				<param name="android-package" value="com.threescreens.cordova.plugin.brotherPrinter.BrotherPrinter"/>
+			</feature>
+		</config-file>
 
-        <source-file src="src/android/BrotherPrinter.java" target-dir="src/com/threescreens/cordova/plugin/brotherPrinter" />
-        <source-file src="src/android/libs/BrotherPrintLibrary.jar" target-dir="libs" />
-        <source-file src="src/android/libs/armeabi" target-dir="libs" />
+		<source-file src="src/android/BrotherPrinter.java" target-dir="src/com/threescreens/cordova/plugin/brotherPrinter" />
 
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-            <uses-permission android:name="android.permission.INTERNET"/>
-            <uses-permission android:name="android.permission.USB" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+		<source-file src="src/android/Common.java" target-dir="src/com/brother/ptouch/sdk/printdemo/common" />
+		<source-file src="src/android/MsgHandle.java" target-dir="src/com/brother/ptouch/sdk/printdemo/common" />
 
-            <uses-feature android:name="android.hardware.usb" android:required="true" />
-        </config-file>
-    </platform>
+		<source-file src="src/android/BasePrint.java" target-dir="src/com/brother/ptouch/sdk/printdemo/printprocess" />
+		<source-file src="src/android/ImageBitmapPrint.java" target-dir="src/com/brother/ptouch/sdk/printdemo/printprocess" />
+		<source-file src="src/android/ImageFilePrint.java" target-dir="src/com/brother/ptouch/sdk/printdemo/printprocess" />
+
+		<source-file src="src/android/libs/BrotherPrintLibrary.jar" target-dir="libs" />
+		<source-file src="src/android/libs/armeabi" target-dir="libs" />
+
+		<config-file target="AndroidManifest.xml" parent="/manifest">
+			<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+			<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+			<uses-permission android:name="android.permission.INTERNET"/>
+			<uses-permission android:name="android.permission.USB" />
+			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+			<uses-feature android:name="android.hardware.usb" android:required="true" />
+		</config-file>
+	</platform>
+
+	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="BrotherPrinter">
+				<param name="ios-package" value="BrotherPrinter"/>
+			</feature>
+		</config-file>
+
+		<config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+			<array>
+				<string>com.brother.ptcbp</string>
+			</array>
+		</config-file>
+
+		<framework src="src/ios/libs/BRPtouchPrinterKit.framework" custom="true" />
+		<framework src="ExternalAccessory.framework" />
+
+		<header-file src="src/ios/BRBluetoothPrintOperation.h" />
+		<source-file src="src/ios/BRBluetoothPrintOperation.m" />
+
+		<header-file src="src/ios/BRPingOperation.h" />
+		<source-file src="src/ios/BRPingOperation.m" />
+
+		<header-file src="src/ios/BRUserDefaults.h" />
+
+		<header-file src="src/ios/BRWLANPrintOperation.h" />
+		<source-file src="src/ios/BRWLANPrintOperation.m" />
+
+		<header-file src="src/ios/BrotherPrinter.h" />
+		<source-file src="src/ios/BrotherPrinter.m" />
+
+		<header-file src="src/ios/APPingModule.h" />
+		<source-file src="src/ios/APPingModule.m" />
+
+	</platform>
 </plugin>
