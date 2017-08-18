@@ -84,7 +84,6 @@ public abstract class BasePrint {
 	 * get Printer
 	 */
 	public Printer getPrinter() {
-
 		return mPrinter;
 	}
 
