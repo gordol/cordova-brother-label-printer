@@ -72,7 +72,7 @@ There are six available methods...
 
 ### findNetworkPrinters
 
-Upon success, [`findNetworkPrinters`](###findNetworkPrinters) will provide a list of printers that were discovered on the network (likely using WiFi). It is not considered an error for no printers to be found, and in this case the list will just be empty.
+Upon success, [`findNetworkPrinters`](#findNetworkPrinters) will provide a list of printers that were discovered on the network (likely using WiFi). It is not considered an error for no printers to be found, and in this case the list will just be empty.
 
 ```typescript
 function findNetworkPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
@@ -80,7 +80,7 @@ function findNetworkPrinters(success: (printers: Printer[]) => void, failure: (r
 
 ### findBluetoothPrinters
 
-Upon success, [`findBluetoothPrinters`](###findBluetoothPrinters) will provide a list of printers that were discovered that have already been paired via Bluetooth. It is not considered an error for no printers to be found, and in this case the list will just be empty.
+Upon success, [`findBluetoothPrinters`](#findBluetoothPrinters) will provide a list of printers that were discovered that have already been paired via Bluetooth. It is not considered an error for no printers to be found, and in this case the list will just be empty.
 
 ```typescript
 function findBluetoothPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
@@ -88,7 +88,7 @@ function findBluetoothPrinters(success: (printers: Printer[]) => void, failure: 
 
 ### findPrinters
 
-[`findPrinters`](###findPrinters) is a convenience function that will perform the actions of both [`findNetworkPrinters`](###findNetworkPrinters) and [`findBluetoothPrinters`](###findBluetoothPrinters), and combine the the results into a single continuous list.
+[`findPrinters`](#findPrinters) is a convenience function that will perform the actions of both [`findNetworkPrinters`](#findNetworkPrinters) and [`findBluetoothPrinters`](#findBluetoothPrinters), and combine the the results into a single continuous list.
 
 ```typescript
 function findPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
@@ -96,7 +96,7 @@ function findPrinters(success: (printers: Printer[]) => void, failure: (reason: 
 
 ### setPrinter
 
-must be called before [`printViaSDK`](###printViaSDK). It takes a single object that should be one of the objects returned from [`findNetworkPrinters`](###findNetworkPrinters), [`findBluetoothPrinters`](###findBluetoothPrinters), or [`findPrinters`](###findPrinters). Upon successfully setting the printer, the success callback
+must be called before [`printViaSDK`](#printViaSDK). It takes a single object that should be one of the objects returned from [`findNetworkPrinters`](#findNetworkPrinters), [`findBluetoothPrinters`](#findBluetoothPrinters), or [`findPrinters`](#findPrinters). Upon successfully setting the printer, the success callback
 will be invoked.  Otherwise, the error callback will be invoked with a string for an error message.
 
 ```typescript
