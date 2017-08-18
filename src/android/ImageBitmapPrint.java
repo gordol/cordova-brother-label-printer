@@ -16,46 +16,46 @@ import java.util.ArrayList;
 
 public class ImageBitmapPrint extends BasePrint {
 
-	private ArrayList<Bitmap> mBitmaps;
+    private ArrayList<Bitmap> mBitmaps;
 
-	public ImageBitmapPrint(Context context, MsgHandle mHandle) {
-		super(context, mHandle);
-	}
+    public ImageBitmapPrint(Context context, MsgHandle mHandle) {
+        super(context, mHandle);
+    }
 
-	/**
-	 * set print data
-	 */
-	public ArrayList<Bitmap> getBitmaps() {
-		return mBitmaps;
-	}
+    /**
+     * set print data
+     */
+    public ArrayList<Bitmap> getBitmaps() {
+        return mBitmaps;
+    }
 
-	/**
-	 * set print data
-	 */
-	public void setBitmaps(ArrayList<Bitmap> bitmaps) {
-		mBitmaps = bitmaps;
-	}
+    /**
+     * set print data
+     */
+    public void setBitmaps(ArrayList<Bitmap> bitmaps) {
+        mBitmaps = bitmaps;
+    }
 
-	/**
-	 * do the particular print
-	 */
-	@Override
-	protected void doPrint() {
+    /**
+     * do the particular print
+     */
+    @Override
+    protected void doPrint() {
 
-		int count = mBitmaps.size();
+        int count = mBitmaps.size();
 
-		for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
 
-			Bitmap bitmap = mBitmaps.get(i);
+            Bitmap bitmap = mBitmaps.get(i);
 
-			mPrintResult = mPrinter.printImage(bitmap);
+            mPrintResult = mPrinter.printImage(bitmap);
 
-			// if error, stop print next files
-			if (mPrintResult.errorCode != ErrorCode.ERROR_NONE) {
-				break;
-			}
-		}
-	}
+            // if error, stop print next files
+            if (mPrintResult.errorCode != ErrorCode.ERROR_NONE) {
+                break;
+            }
+        }
+    }
 
 
 

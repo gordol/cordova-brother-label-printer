@@ -67,21 +67,21 @@
 // Returns a dotted decimal string for the specified address (a (struct sockaddr)
 // within the address NSData).
 static NSString * DisplayAddressForAddress(NSData * address) {
-	int         err;
-	NSString *  result;
-	char        hostStr[NI_MAXHOST];
+    int         err;
+    NSString *  result;
+    char        hostStr[NI_MAXHOST];
 
-	result = nil;
+    result = nil;
 
-	if (address != nil) {
-		err = getnameinfo([address bytes], (socklen_t) [address length], hostStr, sizeof(hostStr), NULL, 0, NI_NUMERICHOST);
-		if (err == 0) {
-			result = [NSString stringWithCString:hostStr encoding:NSASCIIStringEncoding];
-			assert(result != nil);
-		}
-	}
+    if (address != nil) {
+        err = getnameinfo([address bytes], (socklen_t) [address length], hostStr, sizeof(hostStr), NULL, 0, NI_NUMERICHOST);
+        if (err == 0) {
+            result = [NSString stringWithCString:hostStr encoding:NSASCIIStringEncoding];
+            assert(result != nil);
+        }
+    }
 
-	return result;
+    return result;
 }
 
 @interface BRPingOperation () <APPingModuleDelegate>
@@ -100,197 +100,197 @@ static NSString * DisplayAddressForAddress(NSData * address) {
 // Given an NSError, returns a short error string that we can print, handling
 // some special cases along the way.
 -(NSString *)shortErrorFromError:(NSError *)error {
-	NSString *      result;
-	NSNumber *      failureNum;
-	int             failure;
-	const char *    failureStr;
+    NSString *      result;
+    NSNumber *      failureNum;
+    int             failure;
+    const char *    failureStr;
 
-	assert(error != nil);
+    assert(error != nil);
 
-	result = nil;
+    result = nil;
 
-	// Handle DNS errors as a special case.
+    // Handle DNS errors as a special case.
 
-	if ( [[error domain] isEqual:(NSString *)kCFErrorDomainCFNetwork] && ([error code] == kCFHostErrorUnknown) ) {
-		failureNum = [[error userInfo] objectForKey:(id)kCFGetAddrInfoFailureKey];
-		if ( [failureNum isKindOfClass:[NSNumber class]] ) {
-			failure = [failureNum intValue];
-			if (failure != 0) {
-				failureStr = gai_strerror(failure);
-				if (failureStr != NULL) {
-					result = [NSString stringWithUTF8String:failureStr];
-					assert(result != nil);
-				}
-			}
-		}
-	}
+    if ( [[error domain] isEqual:(NSString *)kCFErrorDomainCFNetwork] && ([error code] == kCFHostErrorUnknown) ) {
+        failureNum = [[error userInfo] objectForKey:(id)kCFGetAddrInfoFailureKey];
+        if ( [failureNum isKindOfClass:[NSNumber class]] ) {
+            failure = [failureNum intValue];
+            if (failure != 0) {
+                failureStr = gai_strerror(failure);
+                if (failureStr != NULL) {
+                    result = [NSString stringWithUTF8String:failureStr];
+                    assert(result != nil);
+                }
+            }
+        }
+    }
 
-	// Otherwise try various properties of the error object.
+    // Otherwise try various properties of the error object.
 
-	if (result == nil) {
-		result = [error localizedFailureReason];
-	}
-	if (result == nil) {
-		result = [error localizedDescription];
-	}
-	if (result == nil) {
-		result = [error description];
-	}
-	assert(result != nil);
-	return result;
+    if (result == nil) {
+        result = [error localizedFailureReason];
+    }
+    if (result == nil) {
+        result = [error localizedDescription];
+    }
+    if (result == nil) {
+        result = [error description];
+    }
+    assert(result != nil);
+    return result;
 }
 
 -(void)stopRunningPing {
 //    self.pinger = nil;
 //    CFRunLoopStop(CFRunLoopGetCurrent());
-	[self.pinger stop];
-	self.pinger = nil;
+    [self.pinger stop];
+    self.pinger = nil;
 
-	[self.sendTimer invalidate];
-	self.sendTimer = nil;
+    [self.sendTimer invalidate];
+    self.sendTimer = nil;
 }
 
 // The Objective-C 'main' for this program.  It creates a PingModule object
 // and runs the runloop sending pings and printing the results.
 -(void)runWithHostName:(NSString *)hostName {
-	_shouldStop = NO;
-	assert(self.pinger == nil);
+    _shouldStop = NO;
+    assert(self.pinger == nil);
 
-	self.pinger = [APPingModule pingModuleWithHostName:hostName];
-	assert(self.pinger != nil);
+    self.pinger = [APPingModule pingModuleWithHostName:hostName];
+    assert(self.pinger != nil);
 
-	self.pinger.delegate = self;
-	[self.pinger start];
+    self.pinger.delegate = self;
+    [self.pinger start];
 
-	NSLog(@"Pinger is nil ? [%@]",self.pinger);
-	do {
-		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-	} while (self.pinger != nil);
+    NSLog(@"Pinger is nil ? [%@]",self.pinger);
+    do {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    } while (self.pinger != nil);
 }
 
 -(void)saveString:(NSString *)stringToSave {
-	[self.delegate outputToScreenWithLog:stringToSave];
+    [self.delegate outputToScreenWithLog:stringToSave];
 
 }
 
 // Called to send a ping, both directly (as soon as the PingModule object starts up)
 // and via a timer (to continue sending pings periodically).
 -(void)sendPing {
-	NSLog(@"sendPing");
-	if (_shouldStop) {
-		[self stopRunningPing];
-	} else {
-		assert(self.pinger != nil);
-		[self.pinger sendPingWithData:nil];
-	}
+    NSLog(@"sendPing");
+    if (_shouldStop) {
+        [self stopRunningPing];
+    } else {
+        assert(self.pinger != nil);
+        [self.pinger sendPingWithData:nil];
+    }
 }
 
 -(NSString *)currentDate {
 //    NSLog(@"Date>>>[%@]",[[NSDate date] descriptionWithLocale:[NSLocale currentLocale]]);
-	NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 //    [formatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
-	[formatter setDateFormat:@"HH:mm:ss"];
+    [formatter setDateFormat:@"HH:mm:ss"];
 
-	NSString *currentDate = [formatter stringFromDate:[NSDate date]];
+    NSString *currentDate = [formatter stringFromDate:[NSDate date]];
 
-	return currentDate;
+    return currentDate;
 }
 
 // A PingModule delegate callback method.  We respond to the startup by sending a
 // ping immediately and starting a timer to continue sending them every second.
 -(void)pingModule:(APPingModule *)pinger didStartWithAddress:(NSData *)address {
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
-	assert(address != nil);
+    assert(pinger == self.pinger);
+    assert(address != nil);
 
-	NSString *pingingAddress = [NSString stringWithFormat:@"%@ pinging:[%@]\n",[self currentDate],DisplayAddressForAddress(address)];
-	NSLog(@"%@", pingingAddress);
-	[self saveString:pingingAddress];
+    NSString *pingingAddress = [NSString stringWithFormat:@"%@ pinging:[%@]\n",[self currentDate],DisplayAddressForAddress(address)];
+    NSLog(@"%@", pingingAddress);
+    [self saveString:pingingAddress];
 
 
-	// Send the first ping straight away.
+    // Send the first ping straight away.
 
-	[self sendPing];
+    [self sendPing];
 
-	// And start a timer to send the subsequent pings.
+    // And start a timer to send the subsequent pings.
 
-	assert(self.sendTimer == nil);
-	self.sendTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(sendPing) userInfo:nil repeats:YES];
+    assert(self.sendTimer == nil);
+    self.sendTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(sendPing) userInfo:nil repeats:YES];
 }
 
 // A PingModule delegate callback method.  We shut down our timer and the
 // PingModule object itself, which causes the runloop code to exit.
 -(void)pingModule:(APPingModule *)pinger didFailWithError:(NSError *)error {
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
+    assert(pinger == self.pinger);
 #pragma unused(error)
-	NSString *info = [NSString stringWithFormat:@"%@\t\tfailed: %@\n",[self currentDate],[self shortErrorFromError:error]];
-	NSLog(@"%@", info);
-	[self saveString:info];
+    NSString *info = [NSString stringWithFormat:@"%@\t\tfailed: %@\n",[self currentDate],[self shortErrorFromError:error]];
+    NSLog(@"%@", info);
+    [self saveString:info];
 
-	[self.sendTimer invalidate];
-	self.sendTimer = nil;
+    [self.sendTimer invalidate];
+    self.sendTimer = nil;
 
-	// No need to call -stop.  The pinger will stop itself in this case.
-	// We do however want to nil out pinger so that the runloop stops.
+    // No need to call -stop.  The pinger will stop itself in this case.
+    // We do however want to nil out pinger so that the runloop stops.
 
-	self.pinger = nil;
+    self.pinger = nil;
 }
 
 // A PingModule delegate callback method.  We just log the send.
 -(void)pingModule:(APPingModule *)pinger didSendPacket:(NSData *)packet {
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
+    assert(pinger == self.pinger);
 #pragma unused(packet)
-	NSString *info = [NSString stringWithFormat:@"%@\t#%u\tsent\n",[self currentDate],(unsigned int) OSSwapBigToHostInt16(((const ICMPHeader *) [packet bytes])->sequenceNumber)];
-	NSLog(@"%@",  info);
-	[self saveString:info];
+    NSString *info = [NSString stringWithFormat:@"%@\t#%u\tsent\n",[self currentDate],(unsigned int) OSSwapBigToHostInt16(((const ICMPHeader *) [packet bytes])->sequenceNumber)];
+    NSLog(@"%@",  info);
+    [self saveString:info];
 }
 
 // A PingModule delegate callback method.  We just log the failure.
 -(void)pingModule:(APPingModule *)pinger didFailToSendPacket:(NSData *)packet error:(NSError *)error {
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
+    assert(pinger == self.pinger);
 #pragma unused(packet)
 #pragma unused(error)
-	NSString *info = [NSString stringWithFormat:@"%@\t#%u\tsend failed: %@\n",[self currentDate],(unsigned int) OSSwapBigToHostInt16(((const ICMPHeader *) [packet bytes])->sequenceNumber), [self shortErrorFromError:error]];
-	NSLog(@"%@",  info);
-	[self saveString:info];
+    NSString *info = [NSString stringWithFormat:@"%@\t#%u\tsend failed: %@\n",[self currentDate],(unsigned int) OSSwapBigToHostInt16(((const ICMPHeader *) [packet bytes])->sequenceNumber), [self shortErrorFromError:error]];
+    NSLog(@"%@",  info);
+    [self saveString:info];
 //    NSLog(@"#%u send failed: %@", (unsigned int) OSSwapBigToHostInt16(((const ICMPHeader *) [packet bytes])->sequenceNumber), [self shortErrorFromError:error]);
 }
 
 // A PingModule delegate callback method.  We just log the reception of a ping response.
 -(void)pingModule:(APPingModule *)pinger didReceivePingResponsePacket:(NSData *)packet {
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
+    assert(pinger == self.pinger);
 #pragma unused(packet)
-	NSString *info = [NSString stringWithFormat:@"%@\t#%u\treceived\n",[self currentDate], (unsigned int) OSSwapBigToHostInt16([APPingModule icmpInPacket:packet]->sequenceNumber)];
-	NSLog(@"%@",  info);
-	[self saveString:info];
+    NSString *info = [NSString stringWithFormat:@"%@\t#%u\treceived\n",[self currentDate], (unsigned int) OSSwapBigToHostInt16([APPingModule icmpInPacket:packet]->sequenceNumber)];
+    NSLog(@"%@",  info);
+    [self saveString:info];
 //    NSLog(@"#%u received", (unsigned int) OSSwapBigToHostInt16([PingModule icmpInPacket:packet]->sequenceNumber) );
 }
 
 // A PingModule delegate callback method.  We just log the receive.
 -(void)pingModule:(APPingModule *)pinger didReceiveUnexpectedPacket:(NSData *)packet {
-	const ICMPHeader *  icmpPtr;
+    const ICMPHeader *  icmpPtr;
 
 #pragma unused(pinger)
-	assert(pinger == self.pinger);
+    assert(pinger == self.pinger);
 #pragma unused(packet)
 
-	icmpPtr = [APPingModule icmpInPacket:packet];
-	NSString *info;
-	if (icmpPtr != NULL) {
-		info = [NSString stringWithFormat:@"%@\t#%u\tunexpected ICMP type=%u, code=%u, identifier=%u\n", [self currentDate],(unsigned int) OSSwapBigToHostInt16(icmpPtr->sequenceNumber), (unsigned int) icmpPtr->type, (unsigned int) icmpPtr->code, (unsigned int) OSSwapBigToHostInt16(icmpPtr->identifier)];
-		NSLog(@"%@",  info);
+    icmpPtr = [APPingModule icmpInPacket:packet];
+    NSString *info;
+    if (icmpPtr != NULL) {
+        info = [NSString stringWithFormat:@"%@\t#%u\tunexpected ICMP type=%u, code=%u, identifier=%u\n", [self currentDate],(unsigned int) OSSwapBigToHostInt16(icmpPtr->sequenceNumber), (unsigned int) icmpPtr->type, (unsigned int) icmpPtr->code, (unsigned int) OSSwapBigToHostInt16(icmpPtr->identifier)];
+        NSLog(@"%@",  info);
 //        NSLog(@"#%u unexpected ICMP type=%u, code=%u, identifier=%u", (unsigned int) OSSwapBigToHostInt16(icmpPtr->sequenceNumber), (unsigned int) icmpPtr->type, (unsigned int) icmpPtr->code, (unsigned int) OSSwapBigToHostInt16(icmpPtr->identifier) );
-	} else {
+    } else {
 
-		info = [NSString stringWithFormat:@"%@\t\tunexpected packet size=%zu\n", [self currentDate],(size_t) [packet length]];
-		NSLog(@"%@",  info);
+        info = [NSString stringWithFormat:@"%@\t\tunexpected packet size=%zu\n", [self currentDate],(size_t) [packet length]];
+        NSLog(@"%@",  info);
 //        NSLog(@"unexpected packet size=%zu", (size_t) [packet length]);
-	}
-	[self saveString:info];
+    }
+    [self saveString:info];
 }
 
 

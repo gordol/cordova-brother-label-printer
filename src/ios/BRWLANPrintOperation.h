@@ -15,8 +15,8 @@
 @property(nonatomic, assign) PTSTATUSINFO resultStatus;
 
 -(id)initWithOperation:(BRPtouchPrinter *)targetPtp
-		      printInfo:(BRPtouchPrintInfo *)targetPrintInfo
-		         imgRef:(CGImageRef)targetImgRef
-		  numberOfPaper:(int)targetNumberOfPaper
-		      ipAddress:(NSString *)targetIPAddress;
+              printInfo:(BRPtouchPrintInfo *)targetPrintInfo
+                 imgRef:(CGImageRef)targetImgRef
+          numberOfPaper:(int)targetNumberOfPaper
+              ipAddress:(NSString *)targetIPAddress;
 @end
