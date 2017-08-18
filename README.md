@@ -11,7 +11,7 @@ Already bundled is the following version: v3.0.4 (5/18/2016) which is in the `sr
 In your Cordova project, run the following command to install the plugin.
 
 ```
-cordova plugin add https://github.com/3screens/cordova-brother-label-printer
+cordova plugin add https://github.com/gordol/cordova-brother-label-printer
 ```
 
 And then read [usage](#usage) below.
@@ -53,20 +53,22 @@ __NOTE:__ Currently, you will need to adjust the `modelName` variable in `src/an
 
 
 ## Supported interfaces (by this plugin):
-```
-Wi-Fi (Infrastructure mode)
-USB
-```
 
-_The SDK also has Bluetooth support, but this is not integrated currently. Pull requests are welcomed..._
+* Wi-Fi (Infrastructure mode)
+* Bluetooth (Android only, at the moment, iOS needs more work. See [PR10](https://github.com/gordol/cordova-brother-label-printer/pull/10)
+* USB
+
 
 ## Usage
 
 See here for JS interfaces to the plugin: `www/printer.js`
 
-There are three available methods... 
+There are six available methods... 
 
 * findNetworkPrinters
+* findBluetoothPrinters
+* findPrinters
+* setPrinter
 * printViaSDK
 * sendUSBConfig
 
