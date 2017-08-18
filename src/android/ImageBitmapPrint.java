@@ -12,11 +12,11 @@ import android.graphics.Bitmap;
 import com.brother.ptouch.sdk.PrinterInfo.ErrorCode;
 import com.brother.ptouch.sdk.printdemo.common.MsgHandle;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ImageBitmapPrint extends BasePrint {
 
-    private ArrayList<Bitmap> mBitmaps;
+    private List<Bitmap> mBitmaps;
 
     public ImageBitmapPrint(Context context, MsgHandle mHandle) {
         super(context, mHandle);
@@ -25,14 +25,14 @@ public class ImageBitmapPrint extends BasePrint {
     /**
      * set print data
      */
-    public ArrayList<Bitmap> getBitmaps() {
+    public List<Bitmap> getBitmaps() {
         return mBitmaps;
     }
 
     /**
      * set print data
      */
-    public void setBitmaps(ArrayList<Bitmap> bitmaps) {
+    public void setBitmaps(List<Bitmap> bitmaps) {
         mBitmaps = bitmaps;
     }
 

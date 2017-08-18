@@ -56,7 +56,7 @@
                 Modified by Brother on 5/22/14.
                 Copyright (c) 2014 Brother.
 
- ***********************************************************************************/
+************************************************************************************/
 
 
 #import "APPingModule.h"
@@ -156,6 +156,7 @@ static uint16_t in_cksum(const void *buffer, size_t bufferLen)
     [self stop];
     assert(self->_host == NULL);
     assert(self->_socket == NULL);
+    [super dealloc];
 }
 
 + (APPingModule *)pingModuleWithHostName:(NSString *)hostName

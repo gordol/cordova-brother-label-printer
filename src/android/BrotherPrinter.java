@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -30,8 +31,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.telecom.Call;
 import android.util.Base64;
@@ -60,12 +63,28 @@ public class BrotherPrinter extends CordovaPlugin {
     private ImageBitmapPrint mBitmapPrint;
     private ImageFilePrint mFilePrint;
 
+    private final static int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
+
+    private boolean isPermitWriteStorage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (cordova.getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         mHandle = new MsgHandle(null);
         mBitmapPrint = new ImageBitmapPrint(cordova.getActivity(), mHandle);
         mFilePrint = new ImageFilePrint(cordova.getActivity(), mHandle);
+
+        if (!isPermitWriteStorage()) {
+            cordova.requestPermission(this, PERMISSION_WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     //token to make it easy to grep logcat
@@ -86,10 +105,12 @@ public class BrotherPrinter extends CordovaPlugin {
 
         if ("findPrinters".equals(action)) {
             findPrinters(callbackContext);
+            return true;
         }
 
         if ("setPrinter".equals(action)) {
             setPrinter(args, callbackContext);
+            return true;
         }
 
         if ("printViaSDK".equals(action)) {
@@ -123,44 +144,62 @@ public class BrotherPrinter extends CordovaPlugin {
             location = null;
             macAddress = device.getAddress();
             modelName = device.getName();
+
+            String deviceName = device.getName();
+            PrinterInfo.Model[] models = PrinterInfo.Model.values();
+            for (PrinterInfo.Model model : models) {
+                String modelName = model.toString().replaceAll("_", "-");
+                if (deviceName.startsWith(modelName)) {
+                    this.model = model;
+                    break;
+                }
+            }
         }
 
         public DiscoveredPrinter(NetPrinter printer) {
             port = PrinterInfo.Port.NET;
             modelName = printer.modelName;
-            model = PrinterInfo.Model.valueOf(printer.modelName.replaceAll("-", "_"));
             ipAddress = printer.ipAddress;
             macAddress = printer.macAddress;
             nodeName = printer.nodeName;
             location = printer.location;
+
+            PrinterInfo.Model[] models = PrinterInfo.Model.values();
+            for (PrinterInfo.Model model : models) {
+                String modelName = model.toString().replaceAll("_", "-");
+                if (printer.modelName.endsWith(modelName)) {
+                    this.model = model;
+                    break;
+                }
+            }
         }
 
         public DiscoveredPrinter(JSONObject object) throws JSONException {
-            this.model = PrinterInfo.Model.valueOf(object.getString("model"));
-            this.port = PrinterInfo.Port.valueOf(object.getString("port"));
+            model = PrinterInfo.Model.valueOf(object.getString("model"));
+            port = PrinterInfo.Port.valueOf(object.getString("port"));
 
             if (object.has("modelName")) {
-                this.modelName = object.getString("modelName");
+                modelName = object.getString("modelName");
             }
 
             if (object.has("ipAddress")) {
-                this.ipAddress = object.getString("ipAddress");
+                ipAddress = object.getString("ipAddress");
             }
 
             if (object.has("macAddress")) {
-                this.ipAddress = object.getString("macAddress");
+                macAddress = object.getString("macAddress");
             }
 
             if (object.has("serialNumber")) {
-                this.ipAddress = object.getString("serialNumber");
+                serNo = object.getString("serialNumber");
             }
 
             if (object.has("nodeName")) {
-                this.ipAddress = object.getString("nodeName");
+                nodeName = object.getString("nodeName");
             }
 
             if (object.has("location")) {
-                this.ipAddress = object.getString("location");
+                location = object.getString("location");
             }
         }
 
@@ -168,75 +207,68 @@ public class BrotherPrinter extends CordovaPlugin {
             JSONObject result = new JSONObject();
             result.put("model", model.toString());
             result.put("port", port.toString());
-
-            if (modelName != null && !"".equals(model)) {
-                result.put("modelName", modelName);
-            }
-
-            if (ipAddress != null && !"".equals(ipAddress)){
-                result.put("ipAddress", null);
-            }
-
-            if (macAddress != null && !"".equals(macAddress)) {
-                result.put("macAddress", null);
-            }
-
-            if (serNo != null && !"".equals(serNo)) {
-                result.put("serialNumber", null);
-            }
-
-            if (nodeName != null && !"".equals(nodeName)) {
-                result.put("nodeName", null);
-            }
-
-            if (location != null && !"".equals(location)) {
-                result.put("location", null);
-            }
+            result.put("modelName", modelName);
+            result.put("ipAddress", ipAddress);
+            result.put("macAddress", macAddress);
+            result.put("serialNumber", serNo);
+            result.put("nodeName", nodeName);
+            result.put("location", location);
 
             return result;
         }
     }
 
     private List<DiscoveredPrinter> enumerateNetPrinters() {
-        Printer myPrinter = new Printer();
-        PrinterInfo myPrinterInfo = new PrinterInfo();
+        ArrayList<DiscoveredPrinter> results = new ArrayList<DiscoveredPrinter>();
+        try {
+            Printer myPrinter = new Printer();
+            PrinterInfo myPrinterInfo = new PrinterInfo();
 
-        String[] models = new String[supportedModels.length];
-        for (int i = 0; i < supportedModels.length; i++) {
-            models[i] = supportedModels[i].toString().replaceAll("_", "-");
+            String[] models = new String[supportedModels.length];
+            for (int i = 0; i < supportedModels.length; i++) {
+                models[i] = supportedModels[i].toString().replaceAll("_", "-");
+            }
+
+            NetPrinter[] printers = myPrinter.getNetPrinters(models);
+            for (int i = 0; i < printers.length; i++) {
+                results.add(new DiscoveredPrinter(printers[i]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        NetPrinter[] printers =  myPrinter.getNetPrinters(models);
-
-        ArrayList<DiscoveredPrinter> discoveredPrinters = new ArrayList<DiscoveredPrinter>();
-        for (int i = 0; i < printers.length; i++) {
-            discoveredPrinters.add(new DiscoveredPrinter(printers[i]));
-        }
-
-        return discoveredPrinters;
+        return results;
     }
 
     private List<DiscoveredPrinter> enumerateBluetoothPrinters() {
         ArrayList<DiscoveredPrinter> results = new ArrayList<DiscoveredPrinter>();
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {
-            return results;
-        }
+        try {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                return results;
+            }
 
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            cordova.getActivity().startActivity(enableBtIntent);
-        }
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                cordova.getActivity().startActivity(enableBtIntent);
+            }
 
+            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+            if (pairedDevices == null || pairedDevices.size() == 0) {
+                return results;
+            }
 
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        if (pairedDevices == null || pairedDevices.size() == 0) {
-            return results;
-        }
+            for (BluetoothDevice device : pairedDevices) {
+                DiscoveredPrinter printer = new DiscoveredPrinter(device);
 
-        for (BluetoothDevice device : pairedDevices) {
-            results.add(new DiscoveredPrinter(device));
+                if (printer.model == null) {
+                    continue;
+                }
+                results.add(printer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return results;
@@ -301,8 +333,8 @@ public class BrotherPrinter extends CordovaPlugin {
 
             editor.putString("printerModel", printer.model.toString());
             editor.putString("port", printer.port.toString());
-            editor.putString("address", printer.ipAddress.toString());
-            editor.putString("macAddress", printer.macAddress.toString());
+            editor.putString("address", printer.ipAddress);
+            editor.putString("macAddress", printer.macAddress);
             editor.putString("paperSize", LabelInfo.QL700.W62.toString());
             editor.commit();
 
@@ -328,7 +360,33 @@ public class BrotherPrinter extends CordovaPlugin {
     }
 
     private void printViaSDK(final JSONArray args, final CallbackContext callbackctx) {
-        mHandle.setCallbackContext(callbackctx);
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(cordova.getActivity());
+
+        String port = sharedPreferences.getString("port", "");
+        if ("".equals(port)) {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No printer has been set.");
+            callbackctx.sendPluginResult(result);
+            return;
+        }
+
+        if (PrinterInfo.Port.BLUETOOTH.toString().equals(port)) {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                PluginResult result = new PluginResult(PluginResult.Status.ERROR, "This device does not have a bluetooth adapter.");
+                callbackctx.sendPluginResult(result);
+                return;
+            }
+
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                cordova.getActivity().startActivity(enableBtIntent);
+            }
+
+            mBitmapPrint.setBluetoothAdapter(bluetoothAdapter);
+            mFilePrint.setBluetoothAdapter(bluetoothAdapter);
+        }
 
         Bitmap bitmap = null;
         try {
@@ -340,6 +398,15 @@ public class BrotherPrinter extends CordovaPlugin {
             callbackctx.sendPluginResult(result);
             return;
         }
+
+        if (bitmap == null) {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "The passed in data did not seem to be a decodable image. Please ensure it is a base64 encoded string of a supported Android format");
+            callbackctx.sendPluginResult(result);
+            return;
+        }
+
+        mHandle.setCallbackContext(callbackctx);
+
         List<Bitmap> bitmaps = new ArrayList<Bitmap>();
         bitmaps.add(bitmap);
 
