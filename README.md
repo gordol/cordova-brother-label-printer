@@ -63,12 +63,12 @@ See here for JS interfaces to the plugin: `www/printer.js`
 
 There are six available methods... 
 
-* [findNetworkPrinters(success, failure)](#findNetworkPrinters)
-* [findBluetoothPrinters(success, failure)](#findBluetoothPrinters)
-* [findPrinters(success, failure)](#findPrinters)
-* [setPrinter(printer, success, failure)](#setPrinter)
-* [printViaSDK(data, success)](#printViaSDK)
-* [sendUSBConfig(data, success)](#sendUSBConfig)
+* [findNetworkPrinters(success, failure)](#findnetworkprinters)
+* [findBluetoothPrinters(success, failure)](#findbluetoothprinters)
+* [findPrinters(success, failure)](#findprinters)
+* [setPrinter(printer, success, failure)](#setprinter)
+* [printViaSDK(data, success)](#printviasdk)
+* [sendUSBConfig(data, success)](#sendusbconfig)
 
 ### findNetworkPrinters
 
