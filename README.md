@@ -125,8 +125,8 @@ function sendUSBConfig(data: string, success: () => void): void
 
 ```typescript
 interface Printer {
-	model: string // Usually of the form 'QL_720NW' on Android
-	port: 'NET' | 'BLUETOOTH'
+    model: string // Usually of the form 'QL_720NW' on Android
+    port: 'NET' | 'BLUETOOTH'
     modelName: string // Usually of the form 'Brother QL-720NW'
     ipAddress?: string
     macAddress?: string
