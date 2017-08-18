@@ -72,9 +72,13 @@ There are six available methods...
 * printViaSDK
 * sendUSBConfig
 
-__findNetworkPrinters__ must be called before printViaSDK. It takes no parameters and returns two parameters, one is a boolean (whether a printer was found or not), and the other is a list of found printers. To print, all that's needed are the IP and MAC of the target printer.
+__findNetworkPrinters__ takes no parameters and returns two parameters, one is a boolean (whether a printer was found or not), and the other is a list of found printers. To print, use the setPrinter()... TODO NEED MORE DOCUMENTATION
 
-Currently, the last printer that is found will be the one targetted due to the way we're looping over the `netPrinters` array. This plugin could be extended to allow the user to select which printer they want to connect with... If this is desired, let me know, and I'll address when I get a chance, or better yet, send a pull request. The best way would either be to pass the printer IP/MAC to the printViaSDK method, or perhaps you could just pass an index to select the desired printer from the `netPrinters` list.
+__findBluetoothPrinters__ TODO NEED MORE DOCUMENTATION
+
+__findPrinters__ TODO NEED MORE DOCUMENTATION
+
+__setPrinter__ TODO NEED MORE DOCUMENTATION
 
 __printViaSDK__ takes one parameter, which is a base64 encoded bitmap image. The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be "ERROR_NONE".
 
