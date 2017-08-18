@@ -553,8 +553,6 @@
             [operation removeObserver:self forKeyPath:@"communicationResultForWLAN"];
             PTSTATUSINFO resultStatus = wlanOperation.resultStatus;
 
-
-
             [self.commandDelegate
                 sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Error occured while WLAN printing"]
                       callbackId:_printCallbackId];
