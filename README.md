@@ -121,8 +121,8 @@ calls the Brother SDK's `printFile` method. The expected input is a string conta
 ```typescript
 function sendUSBConfig(data: string, success: () => void): void
 ```
-
 ### Interface Reference
+
 ```typescript
 interface Printer {
 	model: string // Usually of the form 'QL_720NW' on Android
