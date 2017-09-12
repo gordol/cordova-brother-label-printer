@@ -26,11 +26,16 @@
 
 @implementation BRWLANPrintOperation
 
+@synthesize resultStatus = _resultStatus;
+@synthesize errorCode = _errorCode;
+@synthesize dict = _dict;
+
 -(id)initWithOperation:(BRPtouchPrinter *)targetPtp
               printInfo:(BRPtouchPrintInfo *)targetPrintInfo
                  imgRef:(CGImageRef)targetImgRef
           numberOfPaper:(int)targetNumberOfPaper
-              ipAddress:(NSString *)targetIPAddress {
+              ipAddress:(NSString *)targetIPAddress
+               withDict:(NSDictionary *)dict {
     self = [super init];
     if (self) {
         self.ptp                 = targetPtp;
@@ -38,7 +43,7 @@
         self.imgRef              = targetImgRef;
         self.numberOfPaper       = targetNumberOfPaper;
         self.ipAddress           = targetIPAddress;
-
+        _dict                    = dict;
     }
 
     return self;
@@ -64,12 +69,10 @@
 
             [self.ptp setPrintInfo:self.printInfo];
 
-            int printResult = [self.ptp printImage:self.imgRef copy:self.numberOfPaper];
-            if (printResult == 0) {
-                PTSTATUSINFO resultstatus;
-                [self.ptp getPTStatus:&resultstatus];
-                self.resultStatus = resultstatus;
-            }
+            _errorCode = [self.ptp printImage:self.imgRef copy:self.numberOfPaper];
+            PTSTATUSINFO resultstatus;
+            [self.ptp getPTStatus:&resultstatus];
+            _resultStatus = resultstatus;
         }
         [self.ptp endCommunication];
 

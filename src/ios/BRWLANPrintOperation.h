@@ -12,11 +12,14 @@
 @interface BRWLANPrintOperation : NSOperation {
 }
 @property(nonatomic, assign) BOOL communicationResultForWLAN;
-@property(nonatomic, assign) PTSTATUSINFO resultStatus;
+@property(nonatomic, assign, readonly) PTSTATUSINFO resultStatus;
+@property(nonatomic, assign, readonly) int errorCode;
+@property(nonatomic, retain, readonly) NSDictionary *dict;
 
 -(id)initWithOperation:(BRPtouchPrinter *)targetPtp
               printInfo:(BRPtouchPrintInfo *)targetPrintInfo
                  imgRef:(CGImageRef)targetImgRef
           numberOfPaper:(int)targetNumberOfPaper
-              ipAddress:(NSString *)targetIPAddress;
+              ipAddress:(NSString *)targetIPAddress
+               withDict:(NSDictionary *)dict;
 @end

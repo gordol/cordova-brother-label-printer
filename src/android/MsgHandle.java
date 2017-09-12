@@ -213,7 +213,7 @@ public class MsgHandle extends Handler {
                     break;
                 }
 
-                final PluginResult cancelResult = new PluginResult(PluginResult.Status.ERROR, "Cancelled");
+                final PluginResult cancelResult = pluginErrorResult("printCancelled", 1, "cancelled.");
                 mCallback.sendPluginResult(cancelResult);
                 mCallback = null;
                 break;
@@ -222,7 +222,7 @@ public class MsgHandle extends Handler {
                     break;
                 }
 
-                final PluginResult wrongOSResult = new PluginResult(PluginResult.Status.ERROR, "Android OS is not supported");
+                final PluginResult wrongOSResult = pluginErrorResult("wrongOS", 1, "Android OS is not supported");
                 mCallback.sendPluginResult(wrongOSResult);
                 mCallback = null;
                 break;
@@ -231,12 +231,25 @@ public class MsgHandle extends Handler {
                     break;
                 }
 
-                final PluginResult noUSBResult = new PluginResult(PluginResult.Status.ERROR, "USB device is not found");
+                final PluginResult noUSBResult = pluginErrorResult("noUSB", 1, "USB device is not found.");
                 mCallback.sendPluginResult(noUSBResult);
                 mCallback = null;
                 break;
             default:
                 break;
         }
+    }
+
+    private PluginResult pluginErrorResult(String namespace, int code, String message) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("namespace", namespace);
+            result.put("code", code);
+            result.put("message", message);
+        } catch (JSONException e) {
+            Log.d(TAG, "unable to encode error as json object: ", e);
+        }
+
+        return new PluginResult(PluginResult.Status.ERROR, result);
     }
 }

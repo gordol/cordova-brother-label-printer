@@ -12,11 +12,14 @@
 @interface BRBluetoothPrintOperation : NSOperation {
 }
 @property(nonatomic, assign) BOOL communicationResultForBT;
-@property(nonatomic, assign) PTSTATUSINFO resultStatus;
+@property(nonatomic, assign, readonly) PTSTATUSINFO resultStatus;
+@property(nonatomic, assign, readonly) int errorCode;
+@property(nonatomic, retain, readonly) NSDictionary *dict;
 
 -(id)initWithOperation:(BRPtouchPrinter *)targetPtp
               printInfo:(BRPtouchPrintInfo *)targetPrintInfo
                  imgRef:(CGImageRef)targetImgRef
           numberOfPaper:(int)targetNumberOfPaper
-           serialNumber:(NSString *)targetSerialNumber;
+           serialNumber:(NSString *)targetSerialNumber
+               withDict:(NSDictionary *)dict;
 @end

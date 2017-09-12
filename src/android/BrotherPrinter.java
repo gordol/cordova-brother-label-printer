@@ -27,6 +27,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -36,6 +37,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.telecom.Call;
 import android.util.Base64;
 import android.util.Log;
@@ -55,8 +57,8 @@ import com.brother.ptouch.sdk.printdemo.printprocess.ImageFilePrint;
 
 public class BrotherPrinter extends CordovaPlugin {
     private static PrinterInfo.Model[] supportedModels = {
-        PrinterInfo.Model.QL_720NW,
-        PrinterInfo.Model.QL_820NWB,
+            PrinterInfo.Model.QL_720NW,
+            PrinterInfo.Model.QL_820NWB,
     };
 
     private MsgHandle mHandle;
@@ -92,6 +94,11 @@ public class BrotherPrinter extends CordovaPlugin {
 
     @Override
     public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
+        if ("pairBluetoothPrinters".equals(action)) {
+            pairBluetoothPrinters(callbackContext);
+            return true;
+        }
 
         if ("findNetworkPrinters".equals(action)) {
             findNetworkPrinters(callbackContext);
@@ -290,6 +297,20 @@ public class BrotherPrinter extends CordovaPlugin {
         callbackctx.sendPluginResult(result);
     }
 
+    private static final int OPEN_BLUETOOTH_SETTINGS_REQUEST = 0x2345;
+    private void pairBluetoothPrinters(final CallbackContext callbackctx) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                final Intent openPairSection = new Intent();
+                openPairSection.setAction(Settings.ACTION_BLUETOOTH_SETTINGS);
+                cordova.startActivityForResult(BrotherPrinter.this, openPairSection, OPEN_BLUETOOTH_SETTINGS_REQUEST);
+
+                callbackctx.success();
+            }
+        });
+    }
+
     private void findNetworkPrinters(final CallbackContext callbackctx) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
@@ -342,7 +363,7 @@ public class BrotherPrinter extends CordovaPlugin {
             callbackctx.sendPluginResult(result);
         } catch (JSONException e) {
             e.printStackTrace();
-            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "An error occurred while trying to set the printer.");
+            PluginResult result = pluginErrorResult("setPrinter", 2, "an error occurred while trying to set the printer: " + e.getLocalizedMessage());
             callbackctx.sendPluginResult(result);
         }
     }
@@ -365,7 +386,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
         String port = sharedPreferences.getString("port", "");
         if ("".equals(port)) {
-            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No printer has been set.");
+            PluginResult result = pluginErrorResult("printViaSDK", 4, "no printer has been set.");
             callbackctx.sendPluginResult(result);
             return;
         }
@@ -373,7 +394,7 @@ public class BrotherPrinter extends CordovaPlugin {
         if (PrinterInfo.Port.BLUETOOTH.toString().equals(port)) {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             if (bluetoothAdapter == null) {
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, "This device does not have a bluetooth adapter.");
+                PluginResult result = pluginErrorResult("printViaSDK", 3, "this device does not have a bluetooth adapter.");
                 callbackctx.sendPluginResult(result);
                 return;
             }
@@ -394,13 +415,13 @@ public class BrotherPrinter extends CordovaPlugin {
             bitmap = bmpFromBase64(encodedImg);
         } catch (JSONException e) {
             e.printStackTrace();
-            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "An error occurred while trying to retrieve the image passed in.");
+            PluginResult result = pluginErrorResult("printViaSDK", 1, "an error occurred while trying to retrieve the image passed in: " + e.getLocalizedMessage());
             callbackctx.sendPluginResult(result);
             return;
         }
 
         if (bitmap == null) {
-            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "The passed in data did not seem to be a decodable image. Please ensure it is a base64 encoded string of a supported Android format");
+            PluginResult result = pluginErrorResult("printViaSDK", 1, "the passed in data did not seemd to be a decoable image. Please ensure it is a base64 encoded stirng of a supported Android format.");
             callbackctx.sendPluginResult(result);
             return;
         }
@@ -512,6 +533,19 @@ public class BrotherPrinter extends CordovaPlugin {
                 }
             }
         });
+    }
+
+    private PluginResult pluginErrorResult(String namespace, int code, String message) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("namespace", namespace);
+            result.put("code", code);
+            result.put("message", message);
+        } catch (JSONException e) {
+            Log.d(TAG, "unable to encode error as json object: ", e);
+        }
+
+        return new PluginResult(PluginResult.Status.ERROR, result);
     }
 
 }

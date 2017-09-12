@@ -9,6 +9,7 @@
 @interface BrotherPrinter : CDVPlugin<BRPtouchNetworkDelegate>
 @property (retain, atomic) NSOperationQueue *operationQueue;
 
+-(void)pairBluetoothPrinters:(CDVInvokedUrlCommand*)command;
 -(void)findNetworkPrinters:(CDVInvokedUrlCommand*)command;
 -(void)findBluetoothPrinters:(CDVInvokedUrlCommand*)command;
 -(void)findPrinters:(CDVInvokedUrlCommand*)command;
