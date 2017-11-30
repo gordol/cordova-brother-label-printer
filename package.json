@@ -6,12 +6,12 @@
     "id": "cordova-brother-label-printer",
     "platforms": [
       "android",
-      "ios",
+      "ios"
     ]
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gordol/cordova-brother-label-printer.git"
+    "url": "https://github.com/gordol/cordova-brother-label-printer"
   },
   "keywords": [
     "brother",
@@ -20,7 +20,7 @@
     "label",
     "ecosystem:cordova",
     "cordova-ios",
-    "cordova-android",
+    "cordova-android"
   ],
   "engines": [
     {
@@ -41,7 +41,7 @@
     }
   ],
   "author": "Thomas Gordon Lowrey IV",
-  "license": "MIT",
+	"license": "MIT (https://github.com/gordol/cordova-brother-label-printer/blob/master/LICENSE)",
   "bugs": {
     "url": "https://github.com/gordol/cordova-brother-label-printer/issues"
   },
