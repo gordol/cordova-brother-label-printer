@@ -22,13 +22,12 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "engines":
-    {
-      "cordova": ">=3.6.0",
-      "cordova-android": ">=6.0.0",
-      "android-sdk": ">=26",
-      "apple-ios": ">=10.0.0"
-    },
+  "engines": {
+    "cordova": ">=3.6.0",
+    "cordova-android": ">=6.0.0",
+    "android-sdk": ">=26",
+    "apple-ios": ">=10.0.0"
+  },
   "author": "Thomas Gordon Lowrey IV",
   "licenses": [{
       "type": "MIT",
