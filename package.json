@@ -22,26 +22,18 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "engines": [
+  "engines":
     {
-      "name": "cordova",
-      "version": ">=3.6.0"
+      "cordova": ">=3.6.0",
+      "cordova-android": ">=6.0.0",
+      "android-sdk": ">=26",
+      "apple-ios": ">=10.0.0"
     },
-    {
-      "name": "cordova-android",
-      "version": ">=6.0.0"
-    },
-    {
-      "name": "android-sdk",
-      "version": ">=26"
-    },
-    {
-      "name": "apple-ios",
-      "version": ">=10.0.0"
-    }
-  ],
   "author": "Thomas Gordon Lowrey IV",
-	"license": "MIT (https://github.com/gordol/cordova-brother-label-printer/blob/master/LICENSE)",
+  "licenses": [{
+      "type": "MIT",
+      "url": "https://github.com/gordol/cordova-brother-label-printer/blob/master/LICENSE"
+  }],
   "bugs": {
     "url": "https://github.com/gordol/cordova-brother-label-printer/issues"
   },
