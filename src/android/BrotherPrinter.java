@@ -2,38 +2,43 @@ package com.threescreens.cordova.plugin.brotherPrinter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.util.Set;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONException;
 
-import android.app.Activity;
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Picture;
-import android.os.Handler;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.telecom.Call;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -44,27 +49,67 @@ import com.brother.ptouch.sdk.NetPrinter;
 import com.brother.ptouch.sdk.Printer;
 import com.brother.ptouch.sdk.PrinterInfo;
 import com.brother.ptouch.sdk.PrinterStatus;
+import com.brother.ptouch.sdk.printdemo.common.MsgHandle;
+import com.brother.ptouch.sdk.printdemo.printprocess.ImageBitmapPrint;
+import com.brother.ptouch.sdk.printdemo.printprocess.ImageFilePrint;
 
 public class BrotherPrinter extends CordovaPlugin {
+    private static PrinterInfo.Model[] supportedModels = {
+        PrinterInfo.Model.QL_720NW,
+        PrinterInfo.Model.QL_820NWB,
+    };
 
-    String modelName = "QL-720NW";
-    private NetPrinter[] netPrinters;
+    private MsgHandle mHandle;
+    private ImageBitmapPrint mBitmapPrint;
+    private ImageFilePrint mFilePrint;
 
-    private String ipAddress   = null;
-    private String macAddress  = null;
-    private Boolean searched   = false;
-    private Boolean found      = false;
+    private final static int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
+
+    private boolean isPermitWriteStorage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (cordova.getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        mHandle = new MsgHandle(null);
+        mBitmapPrint = new ImageBitmapPrint(cordova.getActivity(), mHandle);
+        mFilePrint = new ImageFilePrint(cordova.getActivity(), mHandle);
+
+        if (!isPermitWriteStorage()) {
+            cordova.requestPermission(this, PERMISSION_WRITE_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+    }
 
     //token to make it easy to grep logcat
-    private static final String TAG = "print";
-
-    private CallbackContext callbackctx;
+    private static final String TAG = "BrotherPrinter";
 
     @Override
     public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         if ("findNetworkPrinters".equals(action)) {
             findNetworkPrinters(callbackContext);
+            return true;
+        }
+
+        if ("findBluetoothPrinters".equals(action)) {
+            findBluetoothPrinters(callbackContext);
+            return true;
+        }
+
+        if ("findPrinters".equals(action)) {
+            findPrinters(callbackContext);
+            return true;
+        }
+
+        if ("setPrinter".equals(action)) {
+            setPrinter(args, callbackContext);
             return true;
         }
 
@@ -81,163 +126,293 @@ public class BrotherPrinter extends CordovaPlugin {
         return false;
     }
 
-    private NetPrinter[] enumerateNetPrinters() {
-        Printer myPrinter = new Printer();
-        PrinterInfo myPrinterInfo = new PrinterInfo();
-        netPrinters = myPrinter.getNetPrinters(modelName);
-        return netPrinters;
+    private class DiscoveredPrinter {
+        public PrinterInfo.Model model;
+        public PrinterInfo.Port port;
+        public String modelName;
+        public String serNo;
+        public String ipAddress;
+        public String macAddress;
+        public String nodeName;
+        public String location;
+
+        public DiscoveredPrinter(BluetoothDevice device) {
+            port = PrinterInfo.Port.BLUETOOTH;
+            ipAddress = null;
+            serNo = null;
+            nodeName = null;
+            location = null;
+            macAddress = device.getAddress();
+            modelName = device.getName();
+
+            String deviceName = device.getName();
+            PrinterInfo.Model[] models = PrinterInfo.Model.values();
+            for (PrinterInfo.Model model : models) {
+                String modelName = model.toString().replaceAll("_", "-");
+                if (deviceName.startsWith(modelName)) {
+                    this.model = model;
+                    break;
+                }
+            }
+        }
+
+        public DiscoveredPrinter(NetPrinter printer) {
+            port = PrinterInfo.Port.NET;
+            modelName = printer.modelName;
+            ipAddress = printer.ipAddress;
+            macAddress = printer.macAddress;
+            nodeName = printer.nodeName;
+            location = printer.location;
+
+            PrinterInfo.Model[] models = PrinterInfo.Model.values();
+            for (PrinterInfo.Model model : models) {
+                String modelName = model.toString().replaceAll("_", "-");
+                if (printer.modelName.endsWith(modelName)) {
+                    this.model = model;
+                    break;
+                }
+            }
+        }
+
+        public DiscoveredPrinter(JSONObject object) throws JSONException {
+            model = PrinterInfo.Model.valueOf(object.getString("model"));
+            port = PrinterInfo.Port.valueOf(object.getString("port"));
+
+            if (object.has("modelName")) {
+                modelName = object.getString("modelName");
+            }
+
+            if (object.has("ipAddress")) {
+                ipAddress = object.getString("ipAddress");
+            }
+
+            if (object.has("macAddress")) {
+                macAddress = object.getString("macAddress");
+            }
+
+            if (object.has("serialNumber")) {
+                serNo = object.getString("serialNumber");
+            }
+
+            if (object.has("nodeName")) {
+                nodeName = object.getString("nodeName");
+            }
+
+            if (object.has("location")) {
+                location = object.getString("location");
+            }
+        }
+
+        public JSONObject toJSON() throws JSONException {
+            JSONObject result = new JSONObject();
+            result.put("model", model.toString());
+            result.put("port", port.toString());
+            result.put("modelName", modelName);
+            result.put("ipAddress", ipAddress);
+            result.put("macAddress", macAddress);
+            result.put("serialNumber", serNo);
+            result.put("nodeName", nodeName);
+            result.put("location", location);
+
+            return result;
+        }
+    }
+
+    private List<DiscoveredPrinter> enumerateNetPrinters() {
+        ArrayList<DiscoveredPrinter> results = new ArrayList<DiscoveredPrinter>();
+        try {
+            Printer myPrinter = new Printer();
+            PrinterInfo myPrinterInfo = new PrinterInfo();
+
+            String[] models = new String[supportedModels.length];
+            for (int i = 0; i < supportedModels.length; i++) {
+                models[i] = supportedModels[i].toString().replaceAll("_", "-");
+            }
+
+            NetPrinter[] printers = myPrinter.getNetPrinters(models);
+            for (int i = 0; i < printers.length; i++) {
+                results.add(new DiscoveredPrinter(printers[i]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
+
+    private List<DiscoveredPrinter> enumerateBluetoothPrinters() {
+        ArrayList<DiscoveredPrinter> results = new ArrayList<DiscoveredPrinter>();
+        try {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                return results;
+            }
+
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                cordova.getActivity().startActivity(enableBtIntent);
+            }
+
+            Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+            if (pairedDevices == null || pairedDevices.size() == 0) {
+                return results;
+            }
+
+            for (BluetoothDevice device : pairedDevices) {
+                DiscoveredPrinter printer = new DiscoveredPrinter(device);
+
+                if (printer.model == null) {
+                    continue;
+                }
+                results.add(printer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
+
+    private void sendDiscoveredPrinters(final CallbackContext callbackctx, List<DiscoveredPrinter> discoveredPrinters) {
+        JSONArray args = new JSONArray();
+
+        for (DiscoveredPrinter p : discoveredPrinters) {
+            try{
+                args.put(p.toJSON());
+            } catch(JSONException e) {
+                // ignore this exception for now.
+                e.printStackTrace();
+            }
+        }
+
+        PluginResult result = new PluginResult(PluginResult.Status.OK, args);
+        callbackctx.sendPluginResult(result);
     }
 
     private void findNetworkPrinters(final CallbackContext callbackctx) {
-
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                try{
-
-                    searched = true;
-
-                    NetPrinter[] netPrinters = enumerateNetPrinters();
-                    int netPrinterCount = netPrinters.length;
-
-                    ArrayList<Map> netPrintersList = null;
-                    if(netPrintersList != null) netPrintersList.clear();
-                    netPrintersList = new ArrayList<Map>();
-
-                    if (netPrinterCount > 0) {
-                        found = true;
-                        Log.d(TAG, "---- network printers found! ----");
-
-                        for (int i = 0; i < netPrinterCount; i++) {
-                            Map<String, String> netPrinter = new HashMap<String, String>();
-
-                            ipAddress = netPrinters[i].ipAddress;
-                            macAddress = netPrinters[i].macAddress;
-
-                            netPrinter.put("ipAddress", netPrinters[i].ipAddress);
-                            netPrinter.put("macAddress", netPrinters[i].macAddress);
-                            netPrinter.put("serNo", netPrinters[i].serNo);
-                            netPrinter.put("nodeName", netPrinters[i].nodeName);
-
-                            netPrintersList.add(netPrinter);
-
-                            Log.d(TAG, 
-                                        " idx:    " + Integer.toString(i)
-                                    + "\n model:  " + netPrinters[i].modelName
-                                    + "\n ip:     " + netPrinters[i].ipAddress
-                                    + "\n mac:    " + netPrinters[i].macAddress
-                                    + "\n serial: " + netPrinters[i].serNo
-                                    + "\n name:   " + netPrinters[i].nodeName
-                                 );
-                        }
-
-                        Log.d(TAG, "---- /network printers found! ----");
-
-                    }else if (netPrinterCount == 0 ) { 
-                        found = false;
-                        Log.d(TAG, "!!!! No network printers found !!!!");
-                    }
-
-                    JSONArray args = new JSONArray();
-                    PluginResult result;
-
-                    Boolean available = netPrinterCount > 0;
-
-                    args.put(available);
-                    args.put(netPrintersList);
-
-                    result = new PluginResult(PluginResult.Status.OK, args);
-
-                    callbackctx.sendPluginResult(result);
-
-                }catch(Exception e){    
-                    e.printStackTrace();
-                }
-
+                List<DiscoveredPrinter> discoveredPrinters = enumerateNetPrinters();
+                sendDiscoveredPrinters(callbackctx, discoveredPrinters);
             }
 
         });
-
     }
 
-    public static Bitmap bmpFromBase64(String base64, final CallbackContext callbackctx){
+    private void findBluetoothPrinters(final CallbackContext callbackctx) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                List<DiscoveredPrinter> discoveredPrinters = enumerateBluetoothPrinters();
+                sendDiscoveredPrinters(callbackctx, discoveredPrinters);
+            }
+        });
+    }
+
+    private void findPrinters(final CallbackContext callbackctx) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                List<DiscoveredPrinter> allPrinters = enumerateNetPrinters();
+                allPrinters.addAll(enumerateBluetoothPrinters());
+                sendDiscoveredPrinters(callbackctx, allPrinters);
+            }
+        });
+    }
+
+    private void setPrinter(JSONArray args, final CallbackContext callbackctx) {
+        try {
+            JSONObject obj = args.getJSONObject(0);
+            DiscoveredPrinter printer = new DiscoveredPrinter(obj);
+
+            SharedPreferences sharedPreferences = PreferenceManager
+                    .getDefaultSharedPreferences(cordova.getActivity());
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            editor.putString("printerModel", printer.model.toString());
+            editor.putString("port", printer.port.toString());
+            editor.putString("address", printer.ipAddress);
+            editor.putString("macAddress", printer.macAddress);
+            editor.putString("paperSize", LabelInfo.QL700.W62.toString());
+            editor.commit();
+
+            PluginResult result = new PluginResult(PluginResult.Status.OK, args);
+            callbackctx.sendPluginResult(result);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "An error occurred while trying to set the printer.");
+            callbackctx.sendPluginResult(result);
+        }
+    }
+
+    public static Bitmap bmpFromBase64(String base64){
         try{
             byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        }catch(Exception e){    
+            InputStream stream = new ByteArrayInputStream(bytes);
+
+            return BitmapFactory.decodeStream(stream);
+        }catch(Exception e){
             e.printStackTrace();
             return null;
         }
     }
 
     private void printViaSDK(final JSONArray args, final CallbackContext callbackctx) {
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(cordova.getActivity());
 
-        final Bitmap bitmap = bmpFromBase64(args.optString(0, null), callbackctx);
-
-        if(!searched){
-            PluginResult result;
-            result = new PluginResult(PluginResult.Status.ERROR, "You must first run findNetworkPrinters() to search the network.");
+        String port = sharedPreferences.getString("port", "");
+        if ("".equals(port)) {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No printer has been set.");
             callbackctx.sendPluginResult(result);
+            return;
         }
 
-        if(!found){
-            PluginResult result;
-            result = new PluginResult(PluginResult.Status.ERROR, "No printer was found. Aborting.");
-            callbackctx.sendPluginResult(result);
-        }
-
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                try{
-
-                    Printer myPrinter = new Printer();
-                    PrinterInfo myPrinterInfo = new PrinterInfo();
-
-                    myPrinterInfo = myPrinter.getPrinterInfo();
-
-                    myPrinterInfo.printerModel  = PrinterInfo.Model.QL_720NW;
-                    myPrinterInfo.port          = PrinterInfo.Port.NET;
-                    myPrinterInfo.printMode     = PrinterInfo.PrintMode.ORIGINAL;
-                    myPrinterInfo.orientation   = PrinterInfo.Orientation.PORTRAIT;
-                    myPrinterInfo.paperSize     = PrinterInfo.PaperSize.CUSTOM;
-                    myPrinterInfo.ipAddress     = ipAddress;
-                    myPrinterInfo.macAddress    = macAddress;
-
-                    myPrinter.setPrinterInfo(myPrinterInfo);
-
-                    LabelInfo myLabelInfo = new LabelInfo();
-
-                    myLabelInfo.labelNameIndex  = myPrinter.checkLabelInPrinter();
-                    myLabelInfo.isAutoCut       = true;
-                    myLabelInfo.isEndCut        = true;
-                    myLabelInfo.isHalfCut       = false;
-                    myLabelInfo.isSpecialTape   = false;
-
-                    //label info must be set after setPrinterInfo, it's not in the docs
-                    myPrinter.setLabelInfo(myLabelInfo);
-
-                    String labelWidth = ""+myPrinter.getLabelParam().labelWidth;
-                    String paperWidth = ""+myPrinter.getLabelParam().paperWidth;
-                    Log.d(TAG, "paperWidth = " + paperWidth);
-                    Log.d(TAG, "labelWidth = " + labelWidth);
-                    
-                    PrinterStatus status = myPrinter.printImage(bitmap);
-
-                    //casting to string doesn't work, but this does... wtf Brother
-                    String status_code = ""+status.errorCode;
-
-                    Log.d(TAG, "PrinterStatus: "+status_code);
-
-                    PluginResult result;
-                    result = new PluginResult(PluginResult.Status.OK, status_code);
-                    callbackctx.sendPluginResult(result);
-
-                }catch(Exception e){    
-                    e.printStackTrace();
-                }
+        if (PrinterInfo.Port.BLUETOOTH.toString().equals(port)) {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                PluginResult result = new PluginResult(PluginResult.Status.ERROR, "This device does not have a bluetooth adapter.");
+                callbackctx.sendPluginResult(result);
+                return;
             }
-        });
-    }
 
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                cordova.getActivity().startActivity(enableBtIntent);
+            }
+
+            mBitmapPrint.setBluetoothAdapter(bluetoothAdapter);
+            mFilePrint.setBluetoothAdapter(bluetoothAdapter);
+        }
+
+        Bitmap bitmap = null;
+        try {
+            String encodedImg = args.getString(0);
+            bitmap = bmpFromBase64(encodedImg);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "An error occurred while trying to retrieve the image passed in.");
+            callbackctx.sendPluginResult(result);
+            return;
+        }
+
+        if (bitmap == null) {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "The passed in data did not seem to be a decodable image. Please ensure it is a base64 encoded string of a supported Android format");
+            callbackctx.sendPluginResult(result);
+            return;
+        }
+
+        mHandle.setCallbackContext(callbackctx);
+
+        List<Bitmap> bitmaps = new ArrayList<Bitmap>();
+        bitmaps.add(bitmap);
+
+        mBitmapPrint.setBitmaps(bitmaps);
+        mBitmapPrint.print();
+    }
 
     private void sendUSBConfig(final JSONArray args, final CallbackContext callbackctx){
 
@@ -281,12 +456,12 @@ public class BrotherPrinter extends CordovaPlugin {
                     if (!usbManager.hasPermission(usbDevice)) {
                         usbManager.requestPermission(usbDevice, permissionIntent);
                     } else {
-                        break; 
+                        break;
                     }
 
-                    try { 
+                    try {
                         Thread.sleep(1000);
-                    } catch (InterruptedException e) { 
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
@@ -334,8 +509,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 } catch (IOException e) {
                     Log.d(TAG, "Temp file action failed: " + e.toString());
-                } 
-
+                }
             }
         });
     }
