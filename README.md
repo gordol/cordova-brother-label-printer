@@ -4,7 +4,7 @@ Uses the Brother Print SDK for Android...
 
 More info can be found here, including a list of compatible printers: http://www.brother.com/product/dev/mobile/android/index.htm
 
-Already bundled is the following version: v3.0.4 (5/18/2016) which is in the `src/android/libs` dir. By downloading this you agree to the Brother SDK License terms which are included in the README under the libs dir.
+Already bundled is the following version: v3.0.9 (2/6/2018) which is in the `src/android/libs` dir. By downloading this you agree to the Brother SDK License terms which are included in the EULA.pdf file under the libs dir.
 
 ## Installing
 
