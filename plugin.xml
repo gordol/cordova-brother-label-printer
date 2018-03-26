@@ -3,12 +3,12 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="com.threescreens.cordova.plugin.brotherPrinter"
-        version="0.0.3">
+        version="0.0.3.e">
 
     <name>BrotherPrinter</name>
 
     <description>Cordova hooks for Brother Print SDK</description>
-    <repo>https://github.com/gordol/cordova-brother-label-printer.git</repo>
+    <repo>https://github.com/eugenedw/cordova-brother-label-printer.git</repo>
     <keywords>brother, sdk, print</keywords>
     <license></license>
 
