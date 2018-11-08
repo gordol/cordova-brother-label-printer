@@ -1,3 +1,0 @@
-All files in libs folder
-
-libsフォルダ以下のすべてのファイル

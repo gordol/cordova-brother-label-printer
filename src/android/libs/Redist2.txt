@@ -1,3 +1,0 @@
-All files in Samples except files of libs folder
-
-Samples以下のlibsフォルダを除いたすべてのファイル
