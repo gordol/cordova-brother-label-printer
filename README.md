@@ -106,11 +106,10 @@ function setPrinter(printer: Printer, success: () => void, failure: (reason: str
 
 ### printViaSDK
 
-takes one parameter, which is a base64 encoded bitmap image. The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be `"ERROR_NONE"`.
+Takes one parameter, which is a base64 encoded bitmap image. The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be `"ERROR_NONE"`.
 
 __Clarification__:
 > A bitmap image in this case can be any image with an encoding that is supported by the platform.
-
 
 ```typescript
 function printViaSDK(data: string, success: () => void): void
@@ -118,11 +117,7 @@ function printViaSDK(data: string, success: () => void): void
 
 ### printerStatus
 
-The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be `"ERROR_NONE".
-
-__Clarification__:
-> A bitmap image in this case can be any image with an encoding that is supported by the platform.
-
+Same response as printViaSDK method above, simply returns the printer status without printing anything.
 
 ```typescript
 function printerStatus(success: () => void): void
