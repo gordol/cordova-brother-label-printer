@@ -33,8 +33,12 @@
         </config-file>
 
         <source-file src="src/android/BrotherPrinter.java" target-dir="src/com/threescreens/cordova/plugin/brotherPrinter" />
-        <source-file src="src/android/libs/BrotherPrintLibrary.jar" target-dir="libs" />
-        <source-file src="src/android/libs/jar+so" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/BrotherPrintLibrary.jar" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/arm64-v8a" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/arm64-v7a" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/armeabi" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/x86" target-dir="libs" />
+        <source-file src="src/android/libs/jar+so/x86_64" target-dir="libs" />
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
