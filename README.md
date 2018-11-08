@@ -111,6 +111,11 @@ takes one parameter, which is a base64 encoded bitmap image. The result should b
 __Clarification__:
 > A bitmap image in this case can be any image with an encoding that is supported by the platform.
 
+
+```typescript
+function printViaSDK(data: string, success: () => void): void
+```
+
 ### printerStatus
 
 The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be `"ERROR_NONE".
@@ -120,7 +125,7 @@ __Clarification__:
 
 
 ```typescript
-function printViaSDK(data: string, success: () => void): void
+function printerStatus(success: () => void): void
 ```
 
 ### sendUSBConfig
