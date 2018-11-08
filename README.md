@@ -14,6 +14,8 @@ In your Cordova project, run the following command to install the plugin.
 cordova plugin add git+https://github.com/gordol/cordova-brother-label-printer.git
 ```
 
+Be sure to add `#branch-name` to the end of the git path above if you want to use a specific branch.
+
 And then read [usage](#usage) below.
 
 ## Help and Support
