@@ -229,12 +229,7 @@ public class BrotherPrinter extends CordovaPlugin {
         try {
             Printer myPrinter = new Printer();
 
-            String[] models = new String[supportedModels.length];
-            for (int i = 0; i < supportedModels.length; i++) {
-                models[i] = supportedModels[i].toString().replaceAll("_", "-");
-            }
-
-            NetPrinter[] printers = myPrinter.getNetPrinters(models);
+            NetPrinter[] printers = myPrinter.getNetPrinters();
             for (int i = 0; i < printers.length; i++) {
                 results.add(new DiscoveredPrinter(printers[i]));
             }
