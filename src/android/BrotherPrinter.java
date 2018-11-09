@@ -61,6 +61,11 @@ import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
 
+    private static PrinterInfo.Model[] supportedModels = {
+        PrinterInfo.Model.QL_720NW,
+        PrinterInfo.Model.QL_820NWB,
+    };
+
     private final static int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
 
     private boolean isPermitWriteStorage() {
@@ -230,7 +235,12 @@ public class BrotherPrinter extends CordovaPlugin {
         try {
             Printer myPrinter = new Printer();
 
-            NetPrinter[] printers = myPrinter.getNetPrinters();
+            String[] models = new String[supportedModels.length];
+            for (int i = 0; i < supportedModels.length; i++) {
+                models[i] = supportedModels[i].toString().replaceAll("_", "-");
+            }
+
+            NetPrinter[] printers = myPrinter.getNetPrinters(models);
             for (int i = 0; i < printers.length; i++) {
                 results.add(new DiscoveredPrinter(printers[i]));
             }
@@ -369,7 +379,10 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity());
 
-                    String port = sharedPreferences.getString("port", "");
+                    String port          = sharedPreferences.getString("port", "");
+                    String printerModel  = sharedPreferences.getString("printerModel", "");
+                    String ipAddress     = sharedPreferences.getString("ipAddress", "");
+
                     if ("".equals(port)) {
                         PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No printer has been set.");
                         callbackctx.sendPluginResult(result);
@@ -412,11 +425,11 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                    myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(sharedPreferences.getString("printerModel"));
-                    myPrinterInfo.port          = PrinterInfo.Port.valueOf(sharedPreferences.getString("port"));
+                    myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
+                    myPrinterInfo.port          = PrinterInfo.Port.valueOf(port);
 
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
-                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(sharedPreferences.getString("ipAddress"));
+                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress);
                     }
 
                     myPrinter.startCommunication();
