@@ -429,7 +429,7 @@ public class BrotherPrinter extends CordovaPlugin {
                     myPrinterInfo.port          = PrinterInfo.Port.valueOf(port);
 
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
-                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress);
+                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
                     }
 
                     myPrinter.startCommunication();
@@ -526,14 +526,15 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                String printerModel  = sharedPreferences.getString("printerModel");
-                String printerPort   = sharedPreferences.getString("port");
+                String printerModel  = sharedPreferences.getString("printerModel").toString();
+                String printerPort   = sharedPreferences.getString("port").toString();
+                String ipAddress     = sharedPreferences.getString("ipAddress");
 
                 myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
                 myPrinterInfo.port          = PrinterInfo.Port.valueOf(printerPort);
 
                 if (PrinterInfo.Port.NET.toString().equals(port)) {
-                    myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(sharedPreferences.getString("ipAddress"));
+                    myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
                 }
 
                 myPrinter.setPrinterInfo(myPrinterInfo);
@@ -603,11 +604,15 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                    myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(sharedPreferences.getString("printerModel"));
-                    myPrinterInfo.port          = PrinterInfo.Port.valueOf(sharedPreferences.getString("port"));
+                    String printerModel  = sharedPreferences.getString("printerModel").toString();
+                    String printerPort   = sharedPreferences.getString("port").toString();
+                    String ipAddress     = sharedPreferences.getString("ipAddress");
+
+                    myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
+                    myPrinterInfo.port          = PrinterInfo.Port.valueOf(printerPort);
 
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
-                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(sharedPreferences.getString("ipAddress"));
+                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
                     }
 
                     myPrinter.startCommunication();
