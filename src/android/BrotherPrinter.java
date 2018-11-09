@@ -528,8 +528,8 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                String printerModel  = sharedPreferences.getString("printerModel", "").toString();
-                String printerPort   = sharedPreferences.getString("port", "").toString();
+                String printerModel  = sharedPreferences.getString("printerModel", "");
+                String printerPort   = sharedPreferences.getString("port", "");
                 String ipAddress     = sharedPreferences.getString("ipAddress", "");
 
                 myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
@@ -606,8 +606,8 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                    String printerModel  = sharedPreferences.getString("printerModel", "").toString();
-                    String printerPort   = sharedPreferences.getString("port", "").toString();
+                    String printerModel  = sharedPreferences.getString("printerModel", "");
+                    String printerPort   = sharedPreferences.getString("port", "");
                     String ipAddress     = sharedPreferences.getString("ipAddress", "");
 
                     myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
