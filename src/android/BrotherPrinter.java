@@ -432,6 +432,8 @@ public class BrotherPrinter extends CordovaPlugin {
                         myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
                     }
 
+                    myPrinter.setPrinterInfo(myPrinterInfo);
+
                     myPrinter.startCommunication();
                     myPrinterInfo.labelNameIndex  = myPrinter.getLabelInfo().ordinal();
                     myPrinter.endCommunication();
@@ -526,9 +528,9 @@ public class BrotherPrinter extends CordovaPlugin {
 
                 PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                String printerModel  = sharedPreferences.getString("printerModel").toString();
-                String printerPort   = sharedPreferences.getString("port").toString();
-                String ipAddress     = sharedPreferences.getString("ipAddress");
+                String printerModel  = sharedPreferences.getString("printerModel", "").toString();
+                String printerPort   = sharedPreferences.getString("port", "").toString();
+                String ipAddress     = sharedPreferences.getString("ipAddress", "");
 
                 myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
                 myPrinterInfo.port          = PrinterInfo.Port.valueOf(printerPort);
@@ -604,9 +606,9 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     PrinterInfo myPrinterInfo = new PrinterInfo();
 
-                    String printerModel  = sharedPreferences.getString("printerModel").toString();
-                    String printerPort   = sharedPreferences.getString("port").toString();
-                    String ipAddress     = sharedPreferences.getString("ipAddress");
+                    String printerModel  = sharedPreferences.getString("printerModel", "").toString();
+                    String printerPort   = sharedPreferences.getString("port", "").toString();
+                    String ipAddress     = sharedPreferences.getString("ipAddress", "");
 
                     myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
                     myPrinterInfo.port          = PrinterInfo.Port.valueOf(printerPort);
@@ -614,6 +616,8 @@ public class BrotherPrinter extends CordovaPlugin {
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
                         myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
                     }
+
+                    myPrinter.setPrinterInfo(myPrinterInfo);
 
                     myPrinter.startCommunication();
                     myPrinterInfo.labelNameIndex  = myPrinter.getLabelInfo().ordinal();
