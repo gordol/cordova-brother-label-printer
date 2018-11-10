@@ -61,6 +61,13 @@ import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
 
+    private Printer myPrinter;
+    private PrinterInfo myPrinterInfo;
+
+    myPrinter = new Printer();
+    myPrinterInfo = new PrinterInfo();
+    myPrinterInfo = myPrinter.getPrinterInfo();
+
     private static PrinterInfo.Model[] supportedModels = {
         PrinterInfo.Model.QL_720NW,
         PrinterInfo.Model.QL_820NWB,
@@ -157,7 +164,7 @@ public class BrotherPrinter extends CordovaPlugin {
             PrinterInfo.Model[] models = PrinterInfo.Model.values();
             for (PrinterInfo.Model model : models) {
                 String modelName = model.toString().replaceAll("_", "-");
-                if (deviceName.startsWith(modelName)) {
+                if (deviceName.contains(modelName)) {
                     this.model = model;
                     break;
                 }
@@ -176,7 +183,7 @@ public class BrotherPrinter extends CordovaPlugin {
             PrinterInfo.Model[] models = PrinterInfo.Model.values();
             for (PrinterInfo.Model model : models) {
                 String modelName = model.toString().replaceAll("_", "-");
-                if (printer.modelName.endsWith(modelName)) {
+                if (printer.modelName.contains(modelName)) {
                     this.model = model;
                     break;
                 }
@@ -233,8 +240,6 @@ public class BrotherPrinter extends CordovaPlugin {
     private List<DiscoveredPrinter> enumerateNetPrinters() {
         ArrayList<DiscoveredPrinter> results = new ArrayList<DiscoveredPrinter>();
         try {
-            Printer myPrinter = new Printer();
-
             String[] models = new String[supportedModels.length];
             for (int i = 0; i < supportedModels.length; i++) {
                 models[i] = supportedModels[i].toString().replaceAll("_", "-");
@@ -374,9 +379,6 @@ public class BrotherPrinter extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try{
-
-                    Printer myPrinter = new Printer();
-
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity());
 
                     String port          = sharedPreferences.getString("port", "");
@@ -423,7 +425,7 @@ public class BrotherPrinter extends CordovaPlugin {
                         return;
                     }
 
-                    PrinterInfo myPrinterInfo = new PrinterInfo();
+                    myPrinterInfo = myPrinter.getPrinterInfo();
 
                     myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
                     myPrinterInfo.port          = PrinterInfo.Port.valueOf(port);
@@ -526,11 +528,11 @@ public class BrotherPrinter extends CordovaPlugin {
                     }
                 }
 
-                PrinterInfo myPrinterInfo = new PrinterInfo();
-
                 String printerModel  = sharedPreferences.getString("printerModel", "");
                 String printerPort   = sharedPreferences.getString("port", "");
                 String ipAddress     = sharedPreferences.getString("ipAddress", "");
+
+                myPrinterInfo = myPrinter.getPrinterInfo();
 
                 myPrinterInfo.printerModel  = PrinterInfo.Model.valueOf(printerModel);
                 myPrinterInfo.port          = PrinterInfo.Port.valueOf(printerPort);
@@ -576,8 +578,6 @@ public class BrotherPrinter extends CordovaPlugin {
             public void run() {
                 try{
 
-                    Printer myPrinter = new Printer();
-
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity());
 
                     String port = sharedPreferences.getString("port", "");
@@ -604,7 +604,7 @@ public class BrotherPrinter extends CordovaPlugin {
                         myPrinter.setBluetooth(bluetoothAdapter);
                     }
 
-                    PrinterInfo myPrinterInfo = new PrinterInfo();
+                    myPrinterInfo = myPrinter.getPrinterInfo();
 
                     String printerModel  = sharedPreferences.getString("printerModel", "");
                     String printerPort   = sharedPreferences.getString("port", "");
