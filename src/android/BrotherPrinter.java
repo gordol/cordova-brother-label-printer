@@ -64,9 +64,9 @@ public class BrotherPrinter extends CordovaPlugin {
     private Printer myPrinter;
     private PrinterInfo myPrinterInfo;
 
-    myPrinter = new Printer();
-    myPrinterInfo = new PrinterInfo();
-    myPrinterInfo = myPrinter.getPrinterInfo();
+    Printer myPrinter = new Printer();
+    PrinterInfo myPrinterInfo = new PrinterInfo();
+    PrinterInfo myPrinterInfo = myPrinter.getPrinterInfo();
 
     private static PrinterInfo.Model[] supportedModels = {
         PrinterInfo.Model.QL_720NW,
