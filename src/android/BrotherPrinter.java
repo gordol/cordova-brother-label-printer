@@ -61,12 +61,9 @@ import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
 
-    private Printer myPrinter;
-    private PrinterInfo myPrinterInfo;
-
-    Printer myPrinter = new Printer();
-    PrinterInfo myPrinterInfo = new PrinterInfo();
-    PrinterInfo myPrinterInfo = myPrinter.getPrinterInfo();
+    private Printer myPrinter = new Printer();
+    private PrinterInfo myPrinterInfo = new PrinterInfo();
+    myPrinterInfo = myPrinter.getPrinterInfo();
 
     private static PrinterInfo.Model[] supportedModels = {
         PrinterInfo.Model.QL_720NW,
