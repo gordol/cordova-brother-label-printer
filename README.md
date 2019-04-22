@@ -1,5 +1,7 @@
 # Cordova Brother Label Printer Plugin
 
+THANKS to Thomas Gordon Lowrey IV for his great work how saved us hours
+
 Uses the Brother Print SDK for Android...
 
 More info can be found here, including a list of compatible printers: http://www.brother.com/product/dev/mobile/android/index.htm
@@ -11,7 +13,7 @@ Already bundled is the following version: v3.0.4 (5/18/2016) which is in the `sr
 In your Cordova project, run the following command to install the plugin.
 
 ```
-cordova plugin add git+https://github.com/gordol/cordova-brother-label-printer.git
+cordova plugin add https://github.com/MenelicSoftware/cordova-plugin-brother-label-printer.git
 ```
 
 And then read [usage](#usage) below.
@@ -26,7 +28,7 @@ You can [read more about Android plugin development for Cordova here](https://co
 
 Read here to [learn how to use Cordova Plugins](https://cordova.apache.org/docs/en/latest/guide/cli/index.html#add-plugins).
 
-If you still have questions, please use the [issue tracker](https://github.com/3screens/cordova-brother-label-printer/issues). Please look at existing issues, and if your question is not answered yet, feel free to open a new issue and I'm happy to assist.
+If you still have questions, please use the [issue tracker](https://github.com/MenelicSoftware/cordova-plugin-brother-label-printer.git/issues). Please look at existing issues, and if your question is not answered yet, feel free to open a new issue and I'm happy to assist.
 
 
 ## Target mobile printers:
@@ -45,95 +47,35 @@ PT-E800W, PT-D800W, PT-E850TKW
 PT-P900W, PT-P950NW
 ```
 
-__Tested models:__ `QL-720NW`, `QL-820NWB`
+__Tested models:__ `QL-710W`, `QL-710NW`,`QL-820NWB`
 
 (if you have tried this with other models, please update this list and send a pull request)
 
+__NOTE:__ Currently, you will need to adjust the `modelName` variable in `src/android/BrotherPrinter.java`. It is the first variable in the `BrotherPrinter` class. This could be extended to be configured through config.xml or via a JS call, but it's currently hard-coded. Feel free to send a pull request to make the configuration more extensible... 
+
 
 ## Supported interfaces (by this plugin):
+```
+Wi-Fi/Wired Ethernet (Infrastructure mode)
+BlueTooth?
+USB?
+```
 
-* Wi-Fi (Infrastructure mode)
-* Bluetooth (Android only, at the moment, iOS needs more work. See [PR10](https://github.com/gordol/cordova-brother-label-printer/pull/10)
-* USB
-
+_The SDK also has Bluetooth support, but this is not integrated currently. Pull requests are welcomed..._
 
 ## Usage
 
 See here for JS interfaces to the plugin: `www/printer.js`
 
-There are six available methods... 
+There is a single available method...
 
-* [findNetworkPrinters(success, failure)](#findnetworkprinters)
-* [findBluetoothPrinters(success, failure)](#findbluetoothprinters)
-* [findPrinters(success, failure)](#findprinters)
-* [setPrinter(printer, success, failure)](#setprinter)
-* [printViaSDK(data, success)](#printviasdk)
-* [sendUSBConfig(data, success)](#sendusbconfig)
-
-### findNetworkPrinters
-
-Upon success, [`findNetworkPrinters`](#findNetworkPrinters) will provide a list of printers that were discovered on the network (likely using WiFi). It is not considered an error for no printers to be found, and in this case the list will just be empty.
-
-```typescript
-function findNetworkPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
 ```
+printLabel(base64ImageOrPdfToPrint, {"numberOfCopies":1, "orientation":"LANDSCAPE", "labelName":"W62RB", "modelName":"QL-820NBW", "port":"NET"})
 
-### findBluetoothPrinters
-
-Upon success, [`findBluetoothPrinters`](#findBluetoothPrinters) will provide a list of printers that were discovered that have already been paired via Bluetooth. It is not considered an error for no printers to be found, and in this case the list will just be empty.
-
-```typescript
-function findBluetoothPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
 ```
-
-### findPrinters
-
-[`findPrinters`](#findPrinters) is a convenience function that will perform the actions of both [`findNetworkPrinters`](#findNetworkPrinters) and [`findBluetoothPrinters`](#findBluetoothPrinters), and combine the the results into a single continuous list.
-
-```typescript
-function findPrinters(success: (printers: Printer[]) => void, failure: (reason: string) => void): void
-```
-
-### setPrinter
-
-must be called before [`printViaSDK`](#printViaSDK). It takes a single object that should be one of the objects returned from [`findNetworkPrinters`](#findNetworkPrinters), [`findBluetoothPrinters`](#findBluetoothPrinters), or [`findPrinters`](#findPrinters). Upon successfully setting the printer, the success callback
-will be invoked.  Otherwise, the error callback will be invoked with a string for an error message.
-
-```typescript
-function setPrinter(printer: Printer, success: () => void, failure: (reason: string) => void): void
-```
-
-### printViaSDK
-
-takes one parameter, which is a base64 encoded bitmap image. The result should be a status code that is passed directly from the SDK. The status codes are documnted in the Brother SDK Appendix in section 4.2.2.5.Error Code. If everything works, the response should be `"ERROR_NONE"`.
-
-__Clarification__:
-> A bitmap image in this case can be any image with an encoding that is supported by the platform.
+For the meaning of each of these parameters, please see http://www.brother.com/product/dev/mobile/android/index.htm
 
 
-```typescript
-function printViaSDK(data: string, success: () => void): void
-```
+Currently, the last printer that is found will be the one targetted due to the way we're looping over the `netPrinters` array. This plugin could be extended to allow the user to select which printer they want to connect with... If this is desired, let me know, and I'll address when I get a chance, or better yet, send a pull request. The best way would either be to pass the printer IP/MAC to the printViaSDK method, or perhaps you could just pass an index to select the desired printer from the `netPrinters` list.
 
-### sendUSBConfig
-
-calls the Brother SDK's `printFile` method. The expected input is a string containing raw print commands, which is written to a temporary file in the app cache directory, and is then sent to the `printFile` method and deleted afterwards. You will need a device that supports USB-OTG and a USB-OTG cable. On first run the app will request USB permissions, and it should be saved after that for subsequent prints. As-is, this method is used to send raw commands in PCL (Printer Control Language) to the printer... For example, to configure the network settings of the printer, etc... You will need to reach out to Brother for documentation of the PCL commands. You can probably find them by searching for "[Brother Printer Command Reference](https://duckduckgo.com/?q=Brother+Printer+Command+Reference)" and appending your model number. This method could be extended easily to accept other types of file input, so you could, for example, print JPG images, etc... See here for a simple way to generate a PJL file to reconfigure the network: https://github.com/gordol/PJL-Generator
-
-
-```typescript
-function sendUSBConfig(data: string, success: () => void): void
-```
-### Interface Reference
-
-```typescript
-interface Printer {
-    model: string // Usually of the form 'QL_720NW' on Android
-    port: 'NET' | 'BLUETOOTH'
-    modelName: string // Usually of the form 'Brother QL-720NW'
-    ipAddress?: string
-    macAddress?: string
-    serialNumber?: string
-    nodeName?: string
-    location?: string
-}
-```
+__sendUSBConfig__ calls the Brother SDK's `printFile` method. The expected input is a string containing raw print commands, which is written to a temporary file in the app cache directory, and is then sent to the `printFile` method and deleted afterwards. You will need a device that supports USB-OTG and a USB-OTG cable. On first run the app will request USB permissions, and it should be saved after that for subsequent prints. As-is, this method is used to send raw commands in PCL (Printer Control Language) to the printer... For example, to configure the network settings of the printer, etc... You will need to reach out to Brother for documentation of the PCL commands. You can probably find them by searching for "[Brother Printer Command Reference](https://duckduckgo.com/?q=Brother+Printer+Command+Reference)" and appending your model number. This method could be extended easily to accept other types of file input, so you could, for example, print JPG images, etc...

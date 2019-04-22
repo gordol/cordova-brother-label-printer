@@ -2,13 +2,13 @@
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-brother-label-printer"
-        version="0.0.4">
+        id="cordova-plugin-brother-label-printer"
+        version="1.0.1">
 
     <name>BrotherPrinter</name>
 
     <description>Cordova hooks for Brother Print SDK</description>
-    <repo>https://github.com/gordol/cordova-brother-label-printer.git</repo>
+    <repo>https://github.com/MenelicSoftware/cordova-plugin-brother-label-printer.git</repo>
     <keywords>brother, sdk, print</keywords>
     <license></license>
 
@@ -47,8 +47,10 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
             <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-            <uses-permission android:name="android.permission.BLUETOOTH" android:required="false" />
-            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="false" />
+            <!--
+                        <uses-permission android:name="android.permission.BLUETOOTH" android:required="false" />
+                        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="false" />
+            -->
             <uses-permission android:name="android.permission.INTERNET"/>
             <uses-permission android:name="android.permission.USB" android:required="false" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -64,15 +66,22 @@
             </feature>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
-            <array>
-                <string>com.brother.ptcbp</string>
-            </array>
-        </config-file>
-
+        <!--
+        Commenting these ExternalAccesory configs to avoid app being rejected from app store:
+        MFi - Program Authorization
+        We are unable to post your app to the App Store at this time because your app has not been authorized by the accessory manufacturer to work with the MFi accessory.
+        Next Steps
+        To resolve this issue, please contact the accessory manufacturer to request your app be added to the MFi Product Plan form.
+        -->
+        <!--
+                <config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+                    <array>
+                        <string>com.brother.ptcbp</string>
+                    </array>
+                </config-file>
+                <framework src="ExternalAccessory.framework" />
+        -->
         <framework src="src/ios/libs/BRPtouchPrinterKit.framework" custom="true" />
-        <framework src="ExternalAccessory.framework" />
-
         <header-file src="src/ios/BRBluetoothPrintOperation.h" />
         <source-file src="src/ios/BRBluetoothPrintOperation.m" />
 
