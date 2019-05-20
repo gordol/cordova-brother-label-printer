@@ -455,7 +455,7 @@ public class BrotherPrinter extends CordovaPlugin {
                     myPrinterInfo.port          = PrinterInfo.Port.valueOf(port);
 
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
-                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
+                        myPrinterInfo.ipAddress = ipAddress;
                     } else {
                         myPrinterInfo.macAddress = sharedPreferences.getString("macAddress", "");
                     }
