@@ -16,6 +16,10 @@ BrotherPrinter.prototype = {
         cordova.exec(onSuccess, onError, 'BrotherPrinter', 'setPrinter', [printer]);
     },
 
+    setLabelInfo: function (labelInfo, onSuccess, onError) {
+        cordova.exec(onSuccess, onError, 'BrotherPrinter', 'setLabelInfo', [labelInfo]);
+    },
+
     printViaSDK: function (data, callback) {
         if (!data || !data.length) {
             console.log('No data passed in. Expects a bitmap.')
