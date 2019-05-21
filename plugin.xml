@@ -33,11 +33,11 @@
         </config-file>
 
         <source-file src="src/android/BrotherPrinter.java" target-dir="src/com/threescreens/cordova/plugin/brotherPrinter" />
-        <lib-file src="src/android/libs/arm64-v8a" />
-        <lib-file src="src/android/libs/armeabi" />
-        <lib-file src="src/android/libs/armeabi-v7a" />
-        <lib-file src="src/android/libs/x86" />
-        <lib-file src="src/android/libs/x86_64" />
+        <source-file src="src/android/libs/arm64-v8a/libcreatedata.so" target-dir="app/src/main/jniLibs/arm64-v8a/" />
+        <source-file src="src/android/libs/armeabi/libcreatedata.so" target-dir="app/src/main/jniLibs/armeabi/" />
+        <source-file src="src/android/libs/armeabi-v7a/libcreatedata.so" target-dir="app/src/main/jniLibs/armeabi-v7a/" />
+        <source-file src="src/android/libs/x86/libcreatedata.so" target-dir="app/src/main/jniLibs/x86/" />
+        <source-file src="src/android/libs/x86_64/libcreatedata.so" target-dir="app/src/main/jniLibs/x86_64/" />
         <lib-file src="src/android/libs/BrotherPrintLibrary.jar" />
 
         <config-file target="AndroidManifest.xml" parent="/manifest">

@@ -57,6 +57,7 @@ import android.app.PendingIntent;
 import com.brother.ptouch.sdk.NetPrinter;
 import com.brother.ptouch.sdk.Printer;
 import com.brother.ptouch.sdk.PrinterInfo;
+import com.brother.ptouch.sdk.LabelInfo;
 import com.brother.ptouch.sdk.PrinterStatus;
 
 public class BrotherPrinter extends CordovaPlugin {
@@ -115,6 +116,11 @@ public class BrotherPrinter extends CordovaPlugin {
 
         if ("setPrinter".equals(action)) {
             setPrinter(args, callbackContext);
+            return true;
+        }
+
+        if ("setLabelInfo".equals(action)) {
+            setLabelInfo(args, callbackContext);
             return true;
         }
 
@@ -359,6 +365,28 @@ public class BrotherPrinter extends CordovaPlugin {
         }
     }
 
+    private void setLabelInfo(JSONArray args, final CallbackContext callbackctx) {
+        try {
+            JSONObject obj = args.getJSONObject(0);
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity());
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            editor.putBoolean("useCustomLabel", obj.getBoolean(("useCustomLabel")));
+            editor.putString("labelModel", obj.getString("labelModel"));
+            editor.putString("labelName", obj.getString("labelName"));
+            editor.commit();
+
+            PluginResult result = new PluginResult(PluginResult.Status.OK, args);
+            callbackctx.sendPluginResult(result);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "An error occurred while trying to set the printer.");
+            callbackctx.sendPluginResult(result);
+        }
+    }
+
     public static Bitmap bmpFromBase64(String base64){
         try{
             byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
@@ -427,21 +455,14 @@ public class BrotherPrinter extends CordovaPlugin {
                     myPrinterInfo.port          = PrinterInfo.Port.valueOf(port);
 
                     if (PrinterInfo.Port.NET.toString().equals(port)) {
-                        myPrinterInfo.ipAddress = PrinterInfo.Port.NET.valueOf(ipAddress).toString();
+                        myPrinterInfo.ipAddress = ipAddress;
+                    } else {
+                        myPrinterInfo.macAddress = sharedPreferences.getString("macAddress", "");
                     }
 
                     myPrinter.setPrinterInfo(myPrinterInfo);
 
-                    myPrinter.startCommunication();
-                    myPrinterInfo.labelNameIndex  = myPrinter.getLabelInfo().labelNameIndex;
-                    myPrinter.endCommunication();
-
-                    myPrinterInfo.isAutoCut       = true;
-                    myPrinterInfo.isCutAtEnd      = true;
-                    myPrinterInfo.isHalfCut       = false;
-                    myPrinterInfo.isSpecialTape   = false;
-
-                    myPrinter.setPrinterInfo(myPrinterInfo);
+                    setPrinterLabelInfo(sharedPreferences);
 
                     myPrinter.startCommunication();
                     PrinterStatus status = myPrinter.printImage(bitmap);
@@ -459,6 +480,44 @@ public class BrotherPrinter extends CordovaPlugin {
                 }
             }
         });
+    }
+
+    private int getLabelNameId(String modelName, String labelName) throws Exception {
+        switch (modelName) {
+            case "PT3":
+                return LabelInfo.PT3.valueOf(labelName).ordinal();
+            case "PT":
+                return LabelInfo.PT.valueOf(labelName).ordinal();
+            case "QL700":
+                return LabelInfo.QL700.valueOf(labelName).ordinal();
+            case "QL1115":
+                return LabelInfo.QL1115.valueOf(labelName).ordinal();
+            case "QL1100":
+                return LabelInfo.QL1100.valueOf(labelName).ordinal();
+            default:
+                throw new Exception("Unrecognized model name for label");
+        }
+    }
+
+    private void setPrinterLabelInfo(SharedPreferences sharedPreferences) throws Exception {
+        Boolean useCustomLabel = sharedPreferences.getBoolean("useCustomLabel", false);
+        String labelModel = sharedPreferences.getString("labelModel", "");
+        String labelName = sharedPreferences.getString("labelName", "");
+
+        if (useCustomLabel) {
+            myPrinterInfo.labelNameIndex = getLabelNameId(labelModel, labelName);
+        } else {
+            myPrinter.startCommunication();
+            myPrinterInfo.labelNameIndex = myPrinter.getLabelInfo().labelNameIndex;
+            myPrinter.endCommunication();
+        }
+
+        myPrinterInfo.isAutoCut = true;
+        myPrinterInfo.isCutAtEnd = true;
+        myPrinterInfo.isHalfCut = false;
+        myPrinterInfo.isSpecialTape = false;
+
+        myPrinter.setPrinterInfo(myPrinterInfo);
     }
 
 
@@ -615,16 +674,7 @@ public class BrotherPrinter extends CordovaPlugin {
 
                     myPrinter.setPrinterInfo(myPrinterInfo);
 
-                    myPrinter.startCommunication();
-                    myPrinterInfo.labelNameIndex  = myPrinter.getLabelInfo().labelNameIndex;
-                    myPrinter.endCommunication();
-
-                    myPrinterInfo.isAutoCut       = true;
-                    myPrinterInfo.isCutAtEnd      = true;
-                    myPrinterInfo.isHalfCut       = false;
-                    myPrinterInfo.isSpecialTape   = false;
-
-                    myPrinter.setPrinterInfo(myPrinterInfo);
+                    setPrinterLabelInfo(sharedPreferences);
 
                     myPrinter.startCommunication();
                     PrinterStatus status = myPrinter.getPrinterStatus();
@@ -643,6 +693,4 @@ public class BrotherPrinter extends CordovaPlugin {
             }
         });
     }
-
-
 }
