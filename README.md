@@ -24,7 +24,7 @@ Please do not email me for support or help with this plugin, use the issue track
 
 This is a Cordova plugin, firstly. You should be familiar with the Cordova plugin system before you try to use this plugin. Fortunately, it's pretty straight forward and easy to understand.
 
-You can [read more about Android plugin development for Cordova here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/plugin.html).  Knowledge of all of these internals is not necessary, but it doesn't hurt to be familiar either. 
+You can [read more about Android plugin development for Cordova here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/plugin.html).  Knowledge of all of these internals is not necessary, but it doesn't hurt to be familiar either.
 
 Read here to [learn how to use Cordova Plugins](https://cordova.apache.org/docs/en/latest/guide/cli/index.html#add-plugins).
 
@@ -47,7 +47,7 @@ PT-E800W, PT-D800W, PT-E850TKW
 PT-P900W, PT-P950NW
 ```
 
-__Tested models:__ `QL-720NW`, `QL-820NWB`
+__Tested models:__ `QL-720NW`, `QL-820NWB`, `TD-2120N`
 
 (if you have tried this with other models, please update this list and send a pull request)
 
@@ -63,12 +63,13 @@ Wi-Fi (Infrastructure mode)
 
 See here for JS interfaces to the plugin: `www/printer.js`
 
-There are six available methods...
+Here are the available methods:
 
 * [findNetworkPrinters(success, failure)](#findnetworkprinters)
 * [findBluetoothPrinters(success, failure)](#findbluetoothprinters)
 * [findPrinters(success, failure)](#findprinters)
 * [setPrinter(printer, success, failure)](#setprinter)
+* [setLabelInfo(labelInfo, success, failure)](#setlabelinfo)
 * [printViaSDK(data, success)](#printviasdk)
 * [printerStatus(success, failure)](#printerstatus)
 * [sendUSBConfig(data, success)](#sendusbconfig)
@@ -104,6 +105,27 @@ will be invoked.  Otherwise, the error callback will be invoked with a string fo
 
 ```typescript
 function setPrinter(printer: Printer, success: () => void, failure: (reason: string) => void): void
+```
+
+### setLabelInfo
+
+optionnal, can be called before [`printViaSdk`](#printViaSDK). It
+takes an object with one of these forms:
+
+**QL Series**
+
+- `useCustomLabel`: set it to true to override the plugin's values
+  with your own settings
+- `labelModel`: either `"PT" `, `"PT3" `, `"QL700" `, `"QL1115" ` or `"QL1100" `
+- `labelName`: constant depending on the labelModel, consult the
+  brother SDK documentation for the values
+
+**TD Series**
+
+- `customPaper`: absolute path to the paper configuration file
+
+```typescript
+function setLabelInfo(LabelInfo: {}, success: () => void, failure: (reason: string) -> void): void
 ```
 
 ### printViaSDK
@@ -146,5 +168,12 @@ interface Printer {
     serialNumber?: string
     nodeName?: string
     location?: string
+}
+
+interface LabelInfo {
+  useCustomLabel?: boolean,
+  labelModel?: string,
+  labelName?: string,
+  customPaper?: string,
 }
 ```

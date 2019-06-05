@@ -68,6 +68,7 @@ public class BrotherPrinter extends CordovaPlugin {
     private static PrinterInfo.Model[] supportedModels = {
         PrinterInfo.Model.QL_720NW,
         PrinterInfo.Model.QL_820NWB,
+        PrinterInfo.Model.TD_2120N,
     };
 
     private final static int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
@@ -373,9 +374,10 @@ public class BrotherPrinter extends CordovaPlugin {
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
 
-            editor.putBoolean("useCustomLabel", obj.getBoolean(("useCustomLabel")));
-            editor.putString("labelModel", obj.getString("labelModel"));
-            editor.putString("labelName", obj.getString("labelName"));
+            editor.putBoolean("useCustomLabel", obj.optBoolean("useCustomLabel", false));
+            editor.putString("labelModel", obj.optString("labelModel", ""));
+            editor.putString("labelName", obj.optString("labelName", ""));
+            editor.putString("customPaper", obj.optString("customPaper", ""));
             editor.commit();
 
             PluginResult result = new PluginResult(PluginResult.Status.OK, args);
@@ -503,6 +505,7 @@ public class BrotherPrinter extends CordovaPlugin {
         Boolean useCustomLabel = sharedPreferences.getBoolean("useCustomLabel", false);
         String labelModel = sharedPreferences.getString("labelModel", "");
         String labelName = sharedPreferences.getString("labelName", "");
+        String customPaper = sharedPreferences.getString("customPaper", "");
 
         if (useCustomLabel) {
             myPrinterInfo.labelNameIndex = getLabelNameId(labelModel, labelName);
@@ -511,6 +514,8 @@ public class BrotherPrinter extends CordovaPlugin {
             myPrinterInfo.labelNameIndex = myPrinter.getLabelInfo().labelNameIndex;
             myPrinter.endCommunication();
         }
+
+        myPrinterInfo.customPaper = customPaper;
 
         myPrinterInfo.isAutoCut = true;
         myPrinterInfo.isCutAtEnd = true;
